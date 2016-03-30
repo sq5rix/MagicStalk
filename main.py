@@ -11,42 +11,34 @@ class Flower(threading.Thread):
         self.port = port
         self.val = ''
         self.command = ''
+        try:
+            self.sp = serial.Serial(self.port, 38400, timeout=30)
+        except:
+            print('Error: no port')
 
-    def set_name(self, name):
-        self.name = name
-
-    def set_port(self, port):
-        self.port = port
-
-    def get_data(self):
+    def run(self):
         while True:
-            c = sp.read()
             if c.isaplha():
                 self.command = c
                 num = ''
-                c = sp.read()
+                c = self.sp.read()
                 while c.isdigit():
                     num += c
-                    c = sp.read()
-                self.val = num
-                if self.command == 'A':
-                    MagicStalkLayout.ids('avg_mst').text = self.val
-                elif self.command == 'M':
-                    MagicStalkLayout.ids('cur_mst').text = self.val
-                elif self.command == 'T':
-                    MagicStalkLayout.ids('cur_temp').text = self.val
-                elif self.command == 'C':
-                    MagicStalkLayout.ids('adj_mst').text = self.val
-                else:
-                    pass
-
-    def run(self):
-        try:
-            sp = serial.Serial(self.port, 38400, timeout=30)
-            sp.flush()
-            self.get_data(self)
-        except:
-            print('no connection on '+port)
+                    c = self.sp.read()
+                if num.__sizeof__() > 0:
+                    self.val = num
+                    if self.command == 'A':
+                        MagicStalkLayout.ids('avg_mst').text = self.val
+                    elif self.command == 'M':
+                        MagicStalkLayout.ids('cur_mst').text = self.val
+                    elif self.command == 'T':
+                        MagicStalkLayout.ids('cur_temp').text = self.val
+                    elif self.command == 'C':
+                        MagicStalkLayout.ids('adj_mst').text = self.val
+                    else:
+                        pass
+            else:
+                c = self.sp.read()
 
 
 class FlowerList(Flower):
