@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$USER_HOME$/PycharmProjects/MagicStalk/.idea/Kivy.iml" filepath="$USER_HOME$/PycharmProjects/MagicStalk/.idea/Kivy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Kivy.iml" filepath="$PROJECT_DIR$/.idea/Kivy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/MagicStalk.iml" filepath="$PROJECT_DIR$/.idea/MagicStalk.iml" />
     </modules>
   </component>
 </project>

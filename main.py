@@ -1,47 +1,57 @@
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
-import threading
+from kivy.lang import Builder
+from threading import Thread
 import serial
 
 
-class Flower(threading.Thread):
+class Flower(GridLayout):
 
     def __init__(self, name, port):
         self.name = name
         self.port = port
         self.val = ''
         self.command = ''
-        try:
-            self.sp = serial.Serial(self.port, 38400, timeout=30)
-        except:
-            print('Error: no port')
+        self.sp = serial.Serial(self.port, baudrate=38400)
+        super(Flower, self).__init__(cols=2)
 
-    def run(self):
+    def listener(self):
+        c = ""
         while True:
-            if c.isaplha():
+            if c.isalpha():
                 self.command = c
                 num = ''
-                c = self.sp.read()
+                c = str(self.sp.read(), encoding='UTF-8')
+                print(c)
                 while c.isdigit():
                     num += c
-                    c = self.sp.read()
+                    c = str(self.sp.read(), encoding='UTF-8')
+                    print(c)
                 if num.__sizeof__() > 0:
                     self.val = num
                     if self.command == 'A':
-                        MagicStalkLayout.ids('avg_mst').text = self.val
+                        self.ids.avg_mst.text = self.val
                     elif self.command == 'M':
-                        MagicStalkLayout.ids('cur_mst').text = self.val
+                        self.ids.cur_mst.text = self.val
                     elif self.command == 'T':
-                        MagicStalkLayout.ids('cur_temp').text = self.val
+                        self.ids.cur_temp.text = self.val
                     elif self.command == 'C':
-                        MagicStalkLayout.ids('adj_mst').text = self.val
+                        self.ids.adj_mst.text = self.val
                     else:
                         pass
             else:
-                c = self.sp.read()
+                c = str(self.sp.read(), encoding='UTF-8')
+                print(c)
+
+    def run(self):
+        try:
+            t = Thread(target=self.listener())
+            t.start()
+        except:
+            print("Error: unable to start thread")
 
 
-class FlowerList(Flower):
+class FlowerList:
 
     def __init__(self):
         self.flower_list = []
@@ -52,13 +62,16 @@ class FlowerList(Flower):
         flower.run()
 
 
-class MagicStalkLayout(GridLayout):
+class RootWidget(GridLayout):
     pass
 
 
 class MagicStalkApp(App):
+
+    #f = Flower('drosera', '/dev/ttyUSB1')
+
     def build(self):
-        return MagicStalkLayout(cols=2)
+        return RootWidget(cols=2)
 
 
 if __name__ == '__main__':
