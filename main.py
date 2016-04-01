@@ -5,19 +5,34 @@ from threading import Thread
 import serial
 
 
-class Flower:
+class RootWidget(GridLayout):
+    obj_cur_mst = ObjectProperty(None)
+    obj_cur_temp = ObjectProperty(None)
+    obj_adj_mst = ObjectProperty(None)
+    obj_avg_mst = ObjectProperty(None)
+
+
+class Flower(GridLayout):
+
+    name = ''
+    port = ''
+    val = ''
+    command = ''
+    sp = serial.Serial()
 
     obj_cur_mst = ObjectProperty(None)
     obj_cur_temp = ObjectProperty(None)
     obj_adj_mst = ObjectProperty(None)
     obj_avg_mst = ObjectProperty(None)
 
-    def __init__(self, name, port):
-        self.name = name
-        self.port = port
-        self.val = ''
-        self.command = ''
+    def __init__(self, **kwargs):
+        super(Flower, self).__init__()
+        self.cols = kwargs['cols']
+        self.name = kwargs['name']
+        self.port = kwargs['port']
         self.sp = serial.Serial(self.port, baudrate=38400)
+        t = Thread(target=self.listener)
+        t.start()
 
     def listener(self):
         c = ""
@@ -26,11 +41,9 @@ class Flower:
                 self.command = c
                 num = ''
                 c = str(self.sp.read(), encoding='UTF-8')
-                print(c)
                 while c.isdigit():
                     num += c
                     c = str(self.sp.read(), encoding='UTF-8')
-                    print(c)
                 if num.__sizeof__() > 0:
                     self.val = num
                     if self.command == 'A':
@@ -45,7 +58,6 @@ class Flower:
                         pass
             else:
                 c = str(self.sp.read(), encoding='UTF-8')
-                print(c)
 
 
 class FlowerList:
@@ -59,17 +71,11 @@ class FlowerList:
         flower.run()
 
 
-class RootWidget(GridLayout):
-    pass
-
-
 class MagicStalkApp(App):
 
     def build(self):
-        f = Flower('drosera', '/dev/ttyUSB1')
-        t = Thread(target=f.listener)
-        t.start()
-        return RootWidget(cols=2)
+        return Flower(cols=2, name='drosera', port='/dev/ttyUSB1' )
+
 
 if __name__ == '__main__':
     MagicStalkApp().run()
