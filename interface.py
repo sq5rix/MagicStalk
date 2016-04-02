@@ -1,5 +1,7 @@
 import serial
 from threading import Thread
+from kivy.properties import ListProperty
+from kivy.event import EventDispatcher
 
 
 class SerialInterface:
@@ -26,9 +28,9 @@ class SerialInterface:
             pass
 
 
-class AvrParser(SerialInterface):
+class AvrParser(SerialInterface, EventDispatcher):
     """ simple uart parser - format 'X9292992 ', where X - any letter, any number follows """
-    result = ['', '']
+    result = ListProperty(['', ''])
 
     def __init__(self, **kwargs):
         super(AvrParser, self).__init__(**kwargs)
@@ -42,7 +44,7 @@ class AvrParser(SerialInterface):
         self.command = ''
 
     def parse(self):
-        """ parse, event on change will send command and value """
+        """ parse event on change will send command and value """
         c = ''
         while True:
             if c.isalpha():
@@ -55,7 +57,7 @@ class AvrParser(SerialInterface):
                 if num.__sizeof__() > 0:
                     self.val = num
                     self.result = [self.command, self.val]
-                    '''TODO how to pass args from here to kivy, Event !! '''
+                    print(self.result)
                 else:
                     pass
             else:

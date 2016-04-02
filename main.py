@@ -2,7 +2,6 @@ from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.properties import ObjectProperty
 from interface import AvrParser
-from kivy.clock import Clock
 
 
 class Flower(GridLayout):
@@ -21,17 +20,17 @@ class Flower(GridLayout):
         self.name = kwargs['name']
         self.port = kwargs['port']
         self.listen = AvrParser(name=self.name, port=self.port)
-        Clock.schedule_interval(self.listener, 1.)
+        self.listen.bind(result=self.listener)  # result is ListProperty in Flower
 
-    def listener(self, dt):
-        if self.listen.result[0] == 'A':
-            self.obj_avg_mst.text = self.listen.result[1]
-        elif self.listen.result[0] == 'M':
-            self.obj_cur_mst.text = self.listen.result[1]
-        elif self.listen.result[0] == 'T':
-            self.obj_cur_temp.text = self.listen.result[1]
-        elif self.listen.result[0] == 'C':
-            self.obj_adj_mst.text = self.listen.result[1]
+    def listener(self, obj, val):
+        if val[0] == 'A':
+            self.obj_avg_mst.text = val[1]
+        elif val[0] == 'M':
+            self.obj_cur_mst.text = val[1]
+        elif val[0] == 'T':
+            self.obj_cur_temp.text = val[1]
+        elif val[0] == 'C':
+            self.obj_adj_mst.text = val[1]
         else:
             pass
 
