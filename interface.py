@@ -28,12 +28,12 @@ class SerialInterface:
             pass
 
 
-class AvrParser(SerialInterface, EventDispatcher):
-    """ simple uart parser - format 'X9292992 ', where X - any letter, any number follows """
+class Parser(EventDispatcher):
+    """ simple abstract parser - format 'X9292992 ', where X - any letter, any number follows """
     result = ListProperty(['', ''])
 
     def __init__(self, **kwargs):
-        super(AvrParser, self).__init__(**kwargs)
+        super(Parser, self).__init__(**kwargs)
         try:
             t = Thread(target=self.parse, name='thread')
             t.start()
@@ -44,7 +44,7 @@ class AvrParser(SerialInterface, EventDispatcher):
         self.command = ''
 
     def parse(self):
-        """ parse event on change will send command and value """
+        """ parse event on change will send command and value - abstract, works with interface """
         c = ''
         while True:
             if c.isalpha():
@@ -62,3 +62,9 @@ class AvrParser(SerialInterface, EventDispatcher):
                     pass
             else:
                 c = self.read()
+
+
+class AvrParser(Parser, SerialInterface):
+    """ simple uart parser - format 'X9292992 ', where X - any letter, any number follows """
+    pass
+
