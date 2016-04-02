@@ -1,24 +1,14 @@
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.properties import ObjectProperty
-from threading import Thread
-import serial
-
-
-class RootWidget(GridLayout):
-    obj_cur_mst = ObjectProperty(None)
-    obj_cur_temp = ObjectProperty(None)
-    obj_adj_mst = ObjectProperty(None)
-    obj_avg_mst = ObjectProperty(None)
+from interface import AvrParser
+from kivy.clock import Clock
 
 
 class Flower(GridLayout):
 
     name = ''
     port = ''
-    val = ''
-    command = ''
-    sp = serial.Serial()
 
     obj_cur_mst = ObjectProperty(None)
     obj_cur_temp = ObjectProperty(None)
@@ -30,34 +20,20 @@ class Flower(GridLayout):
         self.cols = kwargs['cols']
         self.name = kwargs['name']
         self.port = kwargs['port']
-        self.sp = serial.Serial(self.port, baudrate=38400)
-        t = Thread(target=self.listener)
-        t.start()
+        self.listen = AvrParser(name=self.name, port=self.port)
+        Clock.schedule_interval(self.listener, 1.)
 
-    def listener(self):
-        c = ""
-        while True:
-            if c.isalpha():
-                self.command = c
-                num = ''
-                c = str(self.sp.read(), encoding='UTF-8')
-                while c.isdigit():
-                    num += c
-                    c = str(self.sp.read(), encoding='UTF-8')
-                if num.__sizeof__() > 0:
-                    self.val = num
-                    if self.command == 'A':
-                        self.obj_avg_mst.text = self.val
-                    elif self.command == 'M':
-                        self.obj_cur_mst.text = self.val
-                    elif self.command == 'T':
-                        self.obj_cur_temp.text = self.val
-                    elif self.command == 'C':
-                        self.obj_adj_mst.text = self.val
-                    else:
-                        pass
-            else:
-                c = str(self.sp.read(), encoding='UTF-8')
+    def listener(self, dt):
+        if self.listen.result[0] == 'A':
+            self.obj_avg_mst.text = self.listen.result[1]
+        elif self.listen.result[0] == 'M':
+            self.obj_cur_mst.text = self.listen.result[1]
+        elif self.listen.result[0] == 'T':
+            self.obj_cur_temp.text = self.listen.result[1]
+        elif self.listen.result[0] == 'C':
+            self.obj_adj_mst.text = self.listen.result[1]
+        else:
+            pass
 
 
 class FlowerList:
@@ -74,7 +50,7 @@ class FlowerList:
 class MagicStalkApp(App):
 
     def build(self):
-        return Flower(cols=2, name='drosera', port='/dev/ttyUSB1' )
+        return Flower(cols=2, name='drosera', port='/dev/ttyUSB1')
 
 
 if __name__ == '__main__':

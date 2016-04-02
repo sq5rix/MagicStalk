@@ -10,7 +10,7 @@ class SerialInterface:
         try:
             self.sp = serial.Serial(self.port, baudrate=38400)
         except:
-            pass
+            print('Error in port')
 
     def read(self):
         try:
@@ -26,18 +26,20 @@ class SerialInterface:
             pass
 
 
-class Parser(SerialInterface):
+class AvrParser(SerialInterface):
     """ simple uart parser - format 'X9292992 ', where X - any letter, any number follows """
-    val = ''
-    command = ''
+    result = ['', '']
 
     def __init__(self, **kwargs):
-        super(Parser, self).__init__(**kwargs)
+        super(AvrParser, self).__init__(**kwargs)
         try:
-            t = Thread(target=self.listener)
+            t = Thread(target=self.parse, name='thread')
             t.start()
+            print(t.name)
         except:
             pass
+        self.val = ''
+        self.command = ''
 
     def parse(self):
         """ parse, event on change will send command and value """
@@ -52,6 +54,7 @@ class Parser(SerialInterface):
                     c = self.read()
                 if num.__sizeof__() > 0:
                     self.val = num
+                    self.result = [self.command, self.val]
                     '''TODO how to pass args from here to kivy, Event !! '''
                 else:
                     pass
