@@ -14,14 +14,14 @@ class SerialInterface:
         except:
             print('Error in port')
 
-    def read(self):
+    def readchar(self):
         try:
             c = str(self.sp.read(), encoding='UTF-8')
             return c
         except:
             return ''
 
-    def write(self, c):
+    def writechar(self, c):
         try:
             str(self.sp.write(c), encoding='UTF-8')
         except:
@@ -50,10 +50,10 @@ class Parser(EventDispatcher):
             if c.isalpha():
                 self.command = c
                 num = ''
-                c = self.read()
+                c = self.readchar()
                 while c.isdigit():
                     num += c
-                    c = self.read()
+                    c = self.readchar()
                 if num.__sizeof__() > 0:
                     self.val = num
                     self.result = [self.command, self.val]
@@ -61,7 +61,7 @@ class Parser(EventDispatcher):
                 else:
                     pass
             else:
-                c = self.read()
+                c = self.readchar()
 
 
 class AvrParser(Parser, SerialInterface):
