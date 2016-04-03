@@ -7,28 +7,30 @@ from magicerror import MagicError
 
 class SerialInterface:
     """ serial interface opener """
-    def __init__(self, name, port):
-        self.name = name
-        self.port = port
+    def __init__(self, **kwargs):
+        self.name = kwargs['name']
+        self.port = kwargs['port']
         try:
             self.sp = serial.Serial(self.port, baudrate=38400)
         except serial.serialutil.SerialException:
             MagicError('Could not open port')
             self.port = 'None'
+        except Exception as e:
+            MagicError('Problem with port: '+self.port+' : '+e)
 
     def read_char(self):
         try:
             c = str(self.sp.read(), encoding='UTF-8')
             return c
-        except:
+        except Exception as e:
             MagicError('cannot read from port: '+self.port)
             return ''
 
     def write_char(self, c):
         try:
             str(self.sp.write(c), encoding='UTF-8')
-        except:
-            MagicError('cannot write to port: '+self.port)
+        except Exception as e:
+            MagicError('cannot write to port: '+self.port+' : '+e)
 
 
 class Parser(EventDispatcher):
@@ -42,8 +44,8 @@ class Parser(EventDispatcher):
             t.daemon = True
             t.start()
             print(t.name)
-        except:
-            MagicError('cannot run thread: '+t.name)
+        except Exception as e:
+            MagicError('Thread failed '+e)
         self.val = ''
         self.command = ''
 
@@ -70,5 +72,6 @@ class Parser(EventDispatcher):
 
 class AvrParser(Parser, SerialInterface):
     """ simple uart parser - format 'X9292992 ', where X - any letter, any number follows """
-    pass
+    def __init__(self, **kwargs):
+        super(AvrParser, self).__init__(**kwargs)
 
