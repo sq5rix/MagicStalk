@@ -2,6 +2,7 @@ import serial
 from threading import Thread
 from kivy.properties import ListProperty
 from kivy.event import EventDispatcher
+from magicerror import MagicError
 
 
 class SerialInterface:
@@ -11,21 +12,23 @@ class SerialInterface:
         self.port = port
         try:
             self.sp = serial.Serial(self.port, baudrate=38400)
-        except:
-            print('Error in port')
+        except serial.serialutil.SerialException:
+            MagicError('Could not open port')
+            self.port = 'None'
 
-    def readchar(self):
+    def read_char(self):
         try:
             c = str(self.sp.read(), encoding='UTF-8')
             return c
         except:
+            MagicError('cannot read from port: '+self.port)
             return ''
 
-    def writechar(self, c):
+    def write_char(self, c):
         try:
             str(self.sp.write(c), encoding='UTF-8')
         except:
-            pass
+            MagicError('cannot write to port: '+self.port)
 
 
 class Parser(EventDispatcher):
@@ -35,11 +38,12 @@ class Parser(EventDispatcher):
     def __init__(self, **kwargs):
         super(Parser, self).__init__(**kwargs)
         try:
-            t = Thread(target=self.parse, name='thread')
+            t = Thread(target=self.parse, name=kwargs['name'])
+            t.daemon = True
             t.start()
             print(t.name)
         except:
-            pass
+            MagicError('cannot run thread: '+t.name)
         self.val = ''
         self.command = ''
 
@@ -50,10 +54,10 @@ class Parser(EventDispatcher):
             if c.isalpha():
                 self.command = c
                 num = ''
-                c = self.readchar()
+                c = self.read_char()
                 while c.isdigit():
                     num += c
-                    c = self.readchar()
+                    c = self.read_char()
                 if num.__sizeof__() > 0:
                     self.val = num
                     self.result = [self.command, self.val]
@@ -61,7 +65,7 @@ class Parser(EventDispatcher):
                 else:
                     pass
             else:
-                c = self.readchar()
+                c = self.read_char()
 
 
 class AvrParser(Parser, SerialInterface):

@@ -22,7 +22,7 @@ class Flower(GridLayout):
         self.listen = AvrParser(name=self.name, port=self.port)
         self.listen.bind(result=self.listener)  # result is ListProperty in Flower
 
-    def listener(self, obj, val):
+    def listener(self, _, val):
         if val[0] == 'A':
             self.obj_avg_mst.text = val[1]
         elif val[0] == 'M':
@@ -41,13 +41,16 @@ class FlowerList:
         self.flower_list = []
 
     def add_flower(self, name, port):
-        flower = Flower(self, name, port)
-        self.flower_list += flower
-        flower.run()
+        """ creates a new flower in the list
+        :param name: name of flower
+        :param port: USB port or future UDP port
+        """
+        self.flower_list += Flower(self, name, port)
 
 
 class MagicStalkApp(App):
-
+    """ main app, will change - create a list and main screen
+    """
     def build(self):
         return Flower(cols=2, name='drosera', port='/dev/ttyUSB1')
 
