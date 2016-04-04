@@ -3,21 +3,13 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.properties import ObjectProperty
 from interface import AvrParser
 from magicfiles import MagicFileWriter
+from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
 
 
-class Flower(GridLayout):
-
-    name = ''
-    port = ''
-
-    obj_cur_mst = ObjectProperty(None)
-    obj_cur_temp = ObjectProperty(None)
-    obj_adj_mst = ObjectProperty(None)
-    obj_avg_mst = ObjectProperty(None)
+class Flower:
 
     def __init__(self, **kwargs):
-        super(Flower, self).__init__()
-        self.cols = kwargs['cols']
+        # self.cols = kwargs['cols']
         self.name = kwargs['name']
         self.port = kwargs['port']
         self._f = MagicFileWriter(self.name)
@@ -40,8 +32,20 @@ class Flower(GridLayout):
             pass
 
 
-class FlowerList:
+class FlowerScreen(Flower, Screen):
+    """ screen with detailed flower data, connected, or small
+    """
+    def __init__(self, **kwargs):
+        super(FlowerScreen, self).__init__(**kwargs)
+        self.obj_cur_mst = ObjectProperty(None)
+        self.obj_cur_temp = ObjectProperty(None)
+        self.obj_adj_mst = ObjectProperty(None)
+        self.obj_avg_mst = ObjectProperty(None)
 
+
+class FlowerList:
+    """ List of flowers, on main screen
+    """
     def __init__(self):
         self.flower_list = []
 
@@ -51,13 +55,22 @@ class FlowerList:
         :param port: USB port or future UDP port
         """
         self.flower_list += Flower(self, name, port)
+        # Flower(cols=2, name='drosera', port='/dev/ttyUSB1')
+
+
+class Manager(ScreenManager):
+    def __init__(self):
+        self.transition = WipeTransition()
+        self.main_screen = ObjectProperty(None)
+        self.flower_screen = ObjectProperty(None)
+        self.settings_screen = ObjectProperty(None)
 
 
 class MagicStalkApp(App):
     """ main app, will change - create a list and main screen
     """
     def build(self):
-        return Flower(cols=2, name='drosera', port='/dev/ttyUSB1')
+        return Manager()
 
 
 if __name__ == '__main__':
