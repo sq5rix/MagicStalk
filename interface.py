@@ -16,7 +16,7 @@ class SerialInterface:
             MagicError('Could not open port')
             self.port = 'None'
         except Exception as e:
-            MagicError('Problem with port: '+self.port+' : '+e)
+            MagicError('Problem with port: '+self.port)
 
     def read_char(self):
         try:
@@ -30,7 +30,7 @@ class SerialInterface:
         try:
             str(self.sp.write(c), encoding='UTF-8')
         except Exception as e:
-            MagicError('cannot write to port: '+self.port+' : '+e)
+            MagicError('cannot write to port: '+self.port)
 
 
 class Parser(EventDispatcher):
@@ -45,7 +45,7 @@ class Parser(EventDispatcher):
             t.start()
             print(t.name)
         except Exception as e:
-            MagicError('Thread failed '+e)
+            MagicError('Thread failed')
         self.val = ''
         self.command = ''
 
@@ -72,6 +72,5 @@ class Parser(EventDispatcher):
 
 class AvrParser(Parser, SerialInterface):
     """ simple uart parser - format 'X9292992 ', where X - any letter, any number follows """
-    def __init__(self, **kwargs):
-        super(AvrParser, self).__init__(**kwargs)
+
 

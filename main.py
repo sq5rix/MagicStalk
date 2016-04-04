@@ -35,12 +35,9 @@ class Flower(GridLayout):
             self._f.write_serial_line(str(val[1]), ', ')
         elif val[0] == 'C':
             self.obj_adj_mst.text = val[1]
-            self._f.write_serial_line(str(val[1]), ', ', '\n' )
+            self._f.write_serial_line(str(val[1]), '\n' )
         else:
             pass
-
-    def __del__(self):
-        self._f.close()
 
 
 class FlowerList:
