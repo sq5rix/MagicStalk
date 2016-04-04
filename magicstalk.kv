@@ -4,13 +4,38 @@
     font_size: self.height / 4
 
 <MainScreen>:
-    Button:
-        text: "+"
-        on_release: root.manager.current='Flower Screen'
+    AnchorLayout:
+        id: anchor
+        anchor_x: 'left'
+        anchor_y: 'top'
+        GridLayout:
+            cols: 10
+            id: grid
+            size_hint_x: 0.2
+            size_hint_y: 0.2
+            Button:
+                id: plus_button
+                text: "+"
+                on_release: root.manager.current='Set Screen'
+
 
 <SettingsScreen>:
-    Button:
-        text: "Settings"
+    id: settings_screen
+    AnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'top'
+        GridLayout:
+            id: grid
+            cols:2
+            size_hint_x: 0.4
+            size_hint_y: 0.1
+            Label:
+                text: 'Flower Name'
+            TextInput:
+                text: 'flower name'
+                multiline: False
+                on_text_validate: root.manager.current='Flower Screen'
+
 
 <FlowerScreen>:
     obj_cur_mst: cur_mst
@@ -79,6 +104,6 @@
 
     SettingsScreen:
         id: settings_screen
-        name: "Settings Screen"
+        name: "Set Screen"
         manager: screen_manager
 

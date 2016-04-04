@@ -1,5 +1,6 @@
 from interface import AvrParser
 from magicfiles import MagicFileWriter
+from kivy.uix.screenmanager import Screen, ScreenManager
 
 
 class Flower:
@@ -41,3 +42,9 @@ class FlowerList:
         """
         self.flower_list += Flower(self, name=name, port=port)
         # Flower(cols=2, name='drosera', port='/dev/ttyUSB1')
+
+
+# class FlowerScreen(FlowerList, Screen):
+#
+#     def add_set_flower(self):
+#         pass

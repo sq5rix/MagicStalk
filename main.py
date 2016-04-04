@@ -1,11 +1,20 @@
 from kivy.app import App
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
+from kivy.uix.button import Button
 import flower
 
 
 class MainScreen(Screen):
-    pass
+
+    def __init__(self, **kwargs):
+        super(MainScreen, self).__init__(**kwargs)
+        self.add_flower()
+        # self.bind(result=self.add_flower)
+
+    def add_flower(self):
+        b = Button(text='Hello world', font_size=12)
+        # self.id.grid.add_button(button)
 
 
 class FlowerScreen(Screen):
@@ -34,6 +43,8 @@ class MagicStalkApp(App):
     """
     def build(self):
         m = Manager(transition=WipeTransition())
+        b = Button(text='Hello world', font_size=10)
+        m.main_screen.ids.grid.add_widget(b)
         return m
 
 
