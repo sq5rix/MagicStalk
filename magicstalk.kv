@@ -1,37 +1,18 @@
 #:kivy 1.0.9
-#:import AvrParser interface.AvrParser
-
-<Manager>:
-    id: screen_manager
-    main_screen: main_screen
-    flower_screen: flower_screen
-    settings_screen: settings_screen
-    Screen:
-        id: main_screen
-    FlowerScreen:
-        id: flower_screen
-    Screen:
-        id: settings_screen
-
-<Screen>:
-    id: main_screen
-    name: 'Main Screen'
-    manager: screen_manager
-
-<Screen>:
-    id: main_screen
-    name: 'Settings Screen'
-
 
 <Label>:
-    font_size: self.height / 6
+    font_size: self.height / 4
+
+<MainScreen>:
+    Button:
+        text: "+"
+        on_release: root.manager.current='Flower Screen'
+
+<SettingsScreen>:
+    Button:
+        text: "Settings"
 
 <FlowerScreen>:
-
-    id: flower_screen
-    name: 'Flower Screen'
-    manager: screen_manager
-
     obj_cur_mst: cur_mst
     obj_avg_mst: avg_mst
     obj_cur_temp: cur_temp
@@ -39,13 +20,19 @@
     obj_usb_port: usb_port
 
     AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'bottom'
         Button:
             text: 'OK'
-            pos: bottom, right
+            size_hint: 0.18, 0.12
+            on_release: root.manager.current='Main Screen'
+
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'top'
         GridLayout:
             cols: 2
-            pos: top, left
-            size_hint: 0.6, 0.6
+            size_hint: 0.5, 0.7
             Label:
                 text: 'Current Moisture'
             Label:
@@ -71,3 +58,27 @@
             Label:
                 id: usb_port
                 text: 'None'
+
+
+<Manager>:
+    id: screen_manager
+
+    main_screen: main_screen
+    flower_screen: flower_screen
+    settings_screen: settings_screen
+
+    MainScreen:
+        id: main_screen
+        name: "Main Screen"
+        manager: screen_manager
+
+    FlowerScreen:
+        id: flower_screen
+        name: "Flower Screen"
+        manager: screen_manager
+
+    SettingsScreen:
+        id: settings_screen
+        name: "Settings Screen"
+        manager: screen_manager
+
