@@ -2,11 +2,14 @@
 
 <Label>:
     font_size: self.height / 4
+<Button>:
+    font_size: self.height / 4
+<TextInput>:
+    font_size: self.height / 4
 
 <MainScreen>:
     id: main_screen
     AnchorLayout:
-        id: anchor
         anchor_x: 'left'
         anchor_y: 'top'
         StackLayout:
@@ -17,28 +20,11 @@
                 size_hint_x: 0.2
                 size_hint_y: 0.2
                 text: '+'
-                on_release: root.manager.current='Set Screen'
-
-<SettingsScreen>:
-    id: settings_screen
-    AnchorLayout:
-        anchor_x: 'left'
-        anchor_y: 'top'
-        GridLayout:
-            id: grid
-            cols:2
-            size_hint_x: 0.4
-            size_hint_y: 0.1
-            Label:
-                text: 'Flower Name'
-            TextInput:
-                multiline: False
-                on_text_validate:
-                    root.manager.flower_name=self.text
-                    root.manager.current='Main Screen'
+                on_release: root.manager.current='Flower Screen'
 
 
 <FlowerScreen>:
+
     obj_cur_mst: cur_mst
     obj_avg_mst: avg_mst
     obj_cur_temp: cur_temp
@@ -46,12 +32,31 @@
     obj_usb_port: usb_port
 
     AnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'top'
+        StackLayout:
+            size_hint_x: 0.4
+            size_hint_y: 0.1
+            orientation: 'lr-tb'
+            Label:
+                text: 'Flower Name'
+            TextInput:
+                id: text_input
+                multiline: False
+                focus: True
+                on_text_validate:
+                    root.manager.flower_name=self.text
+                    root.manager.current='Main Screen'
+
+    AnchorLayout:
         anchor_x: 'right'
         anchor_y: 'bottom'
         Button:
             text: 'OK'
             size_hint: 0.18, 0.12
-            on_release: root.manager.current='Main Screen'
+            on_release:
+                root.manager.flower_name=root.manager.flower_screen.ids.text_input.text
+                root.manager.current='Main Screen'
 
     AnchorLayout:
         anchor_x: 'right'
@@ -91,7 +96,6 @@
 
     main_screen: main_screen
     flower_screen: flower_screen
-    settings_screen: settings_screen
 
     MainScreen:
         id: main_screen
@@ -103,8 +107,4 @@
         name: "Flower Screen"
         manager: screen_manager
 
-    SettingsScreen:
-        id: settings_screen
-        name: "Set Screen"
-        manager: screen_manager
 

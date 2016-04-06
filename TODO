@@ -1,0 +1,21 @@
+if port is None dont start thread, dont create file
+
+check on the name, if is not taken
+
+check on port, if not taken, if taken, remove from spinner
+
+make spinner
+
+on spinner - run parser - in Flower class parser not in __init__
+
+save/retrieve status, all flowers
+
+main data and picture in + button
+
+add picture - add next picture, choose for ext view
+
+journal with date and time stamps
+
+scroll main screen, flower screen
+
+graph

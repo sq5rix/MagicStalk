@@ -4,16 +4,23 @@ from kivy.uix.screenmanager import Screen, ScreenManager
 
 
 class Flower:
-
-    def __init__(self, **kwargs):
-        # self.cols = kwargs['cols']
-        self.name = kwargs['name']
-        self.port = kwargs['port']
+    """
+    flower class to keep single sensor group and flower data
+    """
+    def __init__(self, name, port, prop):
+        self.name = name
+        self.port = port
+        self.property = prop
         self._f = MagicFileWriter(self.name)
         self.listen = AvrParser(name=self.name, port=self.port)
         self.listen.bind(result=self.listener)  # result is ListProperty in Flower
 
     def listener(self, _, val):
+        """ push data from serial port to flower display
+        :param _: ignored
+        :param val: value from sensor
+        :return: none
+        """
         if val[0] == 'A':
             self.obj_avg_mst.text = val[1]
             self._f.write_serial_line(str(val[1]), ', ')
@@ -35,13 +42,14 @@ class FlowerList:
     def __init__(self):
         self.flower_list = []
 
-    def add_flower(self, name, port):
-        """ creates a new flower in the list
-        :param name: name of flower
-        :param port: USB port or future UDP port
+    def add_flower(self, name, port, prop):
         """
-        self.flower_list += Flower(self, name=name, port=port)
-        # Flower(cols=2, name='drosera', port='/dev/ttyUSB1')
+        :param name: name of flower
+        :param port: connection port, serial, TODO udp
+        :param prop: button on screen property
+        :return: none
+        """
+        self.flower_list.append(Flower(name, port, prop))
 
 
 # class FlowerScreen(FlowerList, Screen):

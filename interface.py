@@ -11,7 +11,8 @@ class SerialInterface:
         self.name = kwargs['name']
         self.port = kwargs['port']
         try:
-            self.sp = serial.Serial(self.port, baudrate=38400)
+            if self.port != 'None':
+                self.sp = serial.Serial(self.port, baudrate=38400)
         except serial.serialutil.SerialException:
             MagicError('Could not open port')
             self.port = 'None'
