@@ -21,6 +21,8 @@
 
 <SettingsScreen>:
     id: settings_screen
+    # flower_name: flower_name
+    # flower_name: 'jaja'
     AnchorLayout:
         anchor_x: 'left'
         anchor_y: 'top'
@@ -32,9 +34,10 @@
             Label:
                 text: 'Flower Name'
             TextInput:
-                text: 'flower name'
                 multiline: False
-                on_text_validate: root.manager.current='Flower Screen'
+                on_text_validate:
+                    root.manager.current='Main Screen'
+                    root.flower_name=self.text
 
 
 <FlowerScreen>:
