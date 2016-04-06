@@ -4,25 +4,23 @@
     font_size: self.height / 4
 
 <MainScreen>:
+    id: main_screen
     AnchorLayout:
         id: anchor
         anchor_x: 'left'
         anchor_y: 'top'
-        GridLayout:
+        StackLayout:
+            id: stack
+            orientation: 'lr-tb'
             cols: 10
-            id: grid
-            size_hint_x: 0.2
-            size_hint_y: 0.2
             Button:
-                id: plus_button
-                text: "+"
+                size_hint_x: 0.2
+                size_hint_y: 0.2
+                text: '+'
                 on_release: root.manager.current='Set Screen'
-
 
 <SettingsScreen>:
     id: settings_screen
-    # flower_name: flower_name
-    # flower_name: 'jaja'
     AnchorLayout:
         anchor_x: 'left'
         anchor_y: 'top'
@@ -36,8 +34,8 @@
             TextInput:
                 multiline: False
                 on_text_validate:
+                    root.manager.flower_name=self.text
                     root.manager.current='Main Screen'
-                    root.flower_name=self.text
 
 
 <FlowerScreen>:

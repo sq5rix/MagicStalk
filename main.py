@@ -19,18 +19,11 @@ class FlowerScreen(Screen):
 
 
 class SettingsScreen(Screen):
+    pass
 
-    flower_name = StringProperty('')
 
-    def __init__(self, **kwargs):
-        super(SettingsScreen, self).__init__(**kwargs)
-        # self.bind(flower_name=self._flower_name)
-        print('init')
-
-    def on_flower_name(self, instance, value):
-        b = Button(text=self.flower_name, font_size=10)
-        self.add_widget(b)
-        print('action')
+class NextFlower(Screen):
+    pass
 
 
 class Manager(ScreenManager):
@@ -38,6 +31,14 @@ class Manager(ScreenManager):
     main_screen = ObjectProperty(None)
     flower_screen = ObjectProperty(None)
     settings_screen = ObjectProperty(None)
+    flower_name = StringProperty('')
+
+    main_flower_list = flower.FlowerList()
+
+    def on_flower_name(self, instance, value):
+        b = Button(text=value, size_hint=(0.2, 0.2))
+        self.main_screen.ids.stack.add_widget(b)
+        #self.main_flower_list.add_flower(value)
 
 
 class MagicStalkApp(App):
