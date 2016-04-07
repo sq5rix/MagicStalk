@@ -16,6 +16,7 @@ class FlowerScreen(Screen):
     obj_cur_temp = ObjectProperty(None)
     obj_adj_mst = ObjectProperty(None)
     obj_avg_mst = ObjectProperty(None)
+    port_list = ObjectProperty(None)
 
 
 class Manager(ScreenManager):
