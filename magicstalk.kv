@@ -1,4 +1,15 @@
 #:kivy 1.0.9
+#:import Factory kivy.factory.Factory
+
+#:set color_button (0.784, 0.443, 0.216, 1)  # brown
+#:set color_button_pressed (0.659, 0.522, 0.431, 1)  # darker brown
+#:set color_font   (0.957, 0.890, 0.843, 1)  # off white
+
+<MySpinnerOption@SpinnerOption>:
+    background_color: color_button if self.state == 'down' else color_button_pressed
+    #background_down: 'atlas://data/images/defaulttheme/button'
+    color: color_font
+
 
 <Label>:
     font_size: self.height / 4
@@ -42,6 +53,7 @@
                 text: 'Flower Name'
             TextInput:
                 id: text_input
+                font_size: self.height * 0.6
                 multiline: False
                 focus: True
                 on_text_validate:
@@ -86,10 +98,15 @@
                 text: ''
             Label:
                 text: 'USB Port'
-            Label:
+            Spinner:
                 id: usb_port
+                background_color: (1, 1, 1, 1)
+                font_size: self.height / 4
                 text: 'None'
-
+                values: ['usb1', 'usb2']
+                background_color: color_button if self.state == 'normal' else color_button_pressed
+                color: color_font
+                option_cls: Factory.get("MySpinnerOption")
 
 <Manager>:
     id: screen_manager
