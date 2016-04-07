@@ -1,13 +1,19 @@
 from magicerror import MagicError
+import os
 
 
 class MagicFileWriter:
     """ open, write and read files
     """
     def __init__(self, name):
+        filename = "log/" + name
+        d = os.path.dirname(self.filename)
         try:
-            self.filename = name
-            self.f = open(name, 'a')
+            os.stat(d)
+        except:
+            os.mkdir(d)
+        try:
+            self.f = open(filename, 'a')
         except:
             MagicError('cannot open file')
 
