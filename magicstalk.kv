@@ -107,6 +107,8 @@
                 background_color: color_button if self.state == 'normal' else color_button_pressed
                 color: color_font
                 option_cls: Factory.get("MySpinnerOption")
+                on_text:
+                    root.chosen_port = self.text
 
 <Manager>:
     id: screen_manager
