@@ -25,12 +25,19 @@ class Manager(ScreenManager):
     flower_name = StringProperty('')
     main_flower_list = flower.FlowerList()
 
-    def on_flower_name(self, ins, value):
+    def add_button_to_main(self, value):
         b = Button(text=value, size_hint=(0.2, 0.2))
         b.bind(on_release=self.bind_screen_button)
-        self.main_flower_list.add_flower(value, None)
         self.main_screen.ids.stack.add_widget(b)
         self.add_widget(FlowerScreen(name=value))
+
+    def populate_flower_list(self):
+        for i in self.main_flower_list.flower_list:
+            self.add_button_to_main(i[0])
+
+    def on_flower_name(self, ins, value):
+        self.main_flower_list.add_flower(value, None)
+        self.add_button_to_main(value)
 
     def bind_screen_button(self, ins):
         self.current = ins.text
@@ -44,6 +51,7 @@ class MagicStalkApp(App):
     def build(self):
         self.title = 'MagicStalk'
         m = Manager(transition=WipeTransition())
+        m.populate_flower_list()
         return m
 
 
