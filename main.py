@@ -1,8 +1,10 @@
 from kivy.app import App
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import ObjectProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
 from kivy.uix.button import Button
+from kivy.uix.spinner import SpinnerOption
 import flower
+import interface
 
 
 class MainScreen(Screen):
@@ -16,7 +18,12 @@ class FlowerScreen(Screen):
     obj_cur_temp = ObjectProperty(None)
     obj_adj_mst = ObjectProperty(None)
     obj_avg_mst = ObjectProperty(None)
-    port_list = ObjectProperty(None)
+    port_list = ListProperty()
+
+    def populate_ports(self):
+        self.port_list = interface.list_serial_ports()
+        self.port_list.append('None')
+        print(self.port_list)
 
 
 class Manager(ScreenManager):
@@ -30,7 +37,9 @@ class Manager(ScreenManager):
         b = Button(text=value, size_hint=(0.2, 0.2))
         b.bind(on_release=self.bind_screen_button)
         self.main_screen.ids.stack.add_widget(b)
-        self.add_widget(FlowerScreen(name=value))
+        m = FlowerScreen(name=value)
+        m.populate_ports()
+        self.add_widget(m)
 
     def populate_flower_list(self):
         for i in self.main_flower_list.flower_list:

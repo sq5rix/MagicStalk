@@ -103,7 +103,7 @@
                 background_color: (1, 1, 1, 1)
                 font_size: self.height / 4
                 text: 'None'
-                values: ['usb1', 'usb2']
+                values: root.port_list
                 background_color: color_button if self.state == 'normal' else color_button_pressed
                 color: color_font
                 option_cls: Factory.get("MySpinnerOption")
