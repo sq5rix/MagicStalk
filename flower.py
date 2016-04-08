@@ -9,9 +9,12 @@ class Flower:
     """
     flower class to keep single sensor group and flower data
     """
-    def __init__(self, name, port):
-        self.name = name
-        self.port = port
+    def __init__(self, **kwargs):
+        self.param_dict = {}
+
+        for i in kwargs:
+            self.param_dict[i]=kwargs[i]
+
         self._f = MagicFileWriter(self.name)
         self.listen = AvrParser(name=self.name, port=self.port)
         self.listen.bind(result=self.listener)  # result is ListProperty in Flower
@@ -44,23 +47,24 @@ class FlowerList:
         self.flower_list = []
         self.get_list()
 
-    def get_list(self):
-        try:
-            f = open('data/all.json')
-            json_data = f.read()
-            f.close()
-            self.flower_list = loads(json_data)
-        except:
-            self.flower_list = []
+    def add_flower(self, dict):
+        """ add flower to the list
+        :param li: flower properties list
+        :return:  none
+        """
+        self.flower_li.append(dict)
+        self.write_dict_to_file
 
-    def add_flower(self, name, port):
+    def remove_flower(self, dict):
+        """ remove flower from the list
+        :param dict: flower properties dictionary
+        :return:  none
         """
-        :param name: name of flower
-        :param port: connection port, serial, TODO udp
-        :param prop: button on screen property
-        :return: none
-        """
-        self.flower_list.append([name, port])
+        with
+        self.flower_list.remove(dict)
+        self.write_list_to_file
+
+    def write_list_to_file(self):
         filename = "data/all.json"
         d = os.path.dirname(filename)
         try:
@@ -73,3 +77,12 @@ class FlowerList:
             f.close()
         except:
             MagicError('cannot open file')
+
+    def get_list(self):
+        try:
+            f = open('data/all.json')
+            json_data = f.read()
+            f.close()
+            self.flower_list = loads(json_data)
+        except:
+            self.flower_list = []
