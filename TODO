@@ -5,8 +5,6 @@ if port is None dont start thread, dont create file
 
 check on the name, if is not taken
 
-check on port, if not taken, if taken, remove from spinner
-
 
 main data and picture in + button
 

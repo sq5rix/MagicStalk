@@ -2,6 +2,7 @@ from interface import AvrParser
 from magicfiles import MagicFileWriter
 from magicerror import MagicError
 from json import dumps, loads
+from kivy.properties import ObjectProperty
 import os
 
 
@@ -14,6 +15,8 @@ class Flower:
         self._listen = None
         self.param_dict = {}
         self.update_flower(**kwargs)
+        self.scr = ObjectProperty(None)
+        self.but = ObjectProperty(None)
 
     def update_flower(self, **kwargs):
         self.param_dict = {}
@@ -48,6 +51,18 @@ class Flower:
             self._f.write_serial_line(str(val[1]), '\n' )
         else:
             pass
+
+    def set_screen(self, b):
+        self.scr = b
+
+    def get_screen(self):
+        return self.scr
+
+    def set_button(self, b):
+        self.but = b
+
+    def get_button(self, b):
+        return self.but
 
 
 class FlowerList:

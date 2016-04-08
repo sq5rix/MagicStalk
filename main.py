@@ -44,6 +44,9 @@ class Manager(ScreenManager):
         m.populate_ports()
         self.add_widget(m)
 
+    def remove_button_from_main(self, value):
+        pass
+
     def populate_flower_list(self):
         for i in self.main_flower_list.flower_list:
             self.add_button_to_main(i[0])
@@ -54,8 +57,12 @@ class Manager(ScreenManager):
         :param value: name of newly created screen
         :return: none
         """
-        self.main_flower_list.add_flower(name=nm, port=None)
-        self.add_button_to_main(nm)
+        if nm == '':
+            self.main_flower_list.remove_flower(nm)
+            self.remove_button_from_main(nm)
+        else:
+            self.main_flower_list.add_flower(name=nm, port=None)
+            self.add_button_to_main(nm)
 
     def bind_screen_button(self, ins):
         self.current = ins.text
