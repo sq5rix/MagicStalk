@@ -30,3 +30,7 @@ class MagicFileWriter:
         for i in args:
             self.f.write(i)
             self.f.flush()
+
+    def remove(self):
+        self.f.close()
+

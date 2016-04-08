@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Event
 from kivy.properties import ListProperty
 from kivy.event import EventDispatcher
 from magicerror import MagicError
@@ -39,11 +39,15 @@ def list_serial_ports():
 class SerialInterface:
     """ serial interface opener """
     def __init__(self, **kwargs):
+
         self.name = kwargs['name']
         self.port = kwargs['port']
+
         try:
             if self.port != 'None':
                 self.sp = serial.Serial(self.port, baudrate=38400)
+            elif self.sp.is_open():
+                self.sp.close()
         except serial.serialutil.SerialException:
             MagicError('Could not open port')
             self.port = 'None'
@@ -72,10 +76,11 @@ class Parser(EventDispatcher):
     def __init__(self, **kwargs):
         super(Parser, self).__init__(**kwargs)
         try:
-            t = Thread(target=self.parse, name=kwargs['name'])
-            t.daemon = True
-            t.start()
-            print(t.name)
+            self._t = Thread(target=self.parse, name=kwargs['name'])
+            self._t.daemon = True
+            self._t.start()
+            self._stop = Event()
+            print(self._t.name)
         except Exception as e:
             MagicError('Thread failed')
         self.val = ''
@@ -100,6 +105,9 @@ class Parser(EventDispatcher):
                     pass
             else:
                 c = self.read_char()
+
+    def remove(self):
+        self._stop.set()
 
 
 class AvrParser(Parser, SerialInterface):

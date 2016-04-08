@@ -2,7 +2,7 @@ from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
 from kivy.uix.button import Button
-import flower
+from flower import FlowerList
 import interface
 
 
@@ -34,7 +34,7 @@ class Manager(ScreenManager):
     main_screen = ObjectProperty(None)
     flower_screen = ObjectProperty(None)
     flower_name = StringProperty('')
-    main_flower_list = flower.FlowerList()
+    main_flower_list = FlowerList()
 
     def add_button_to_main(self, value):
         b = Button(text=value, size_hint=(0.2, 0.2))
@@ -48,14 +48,14 @@ class Manager(ScreenManager):
         for i in self.main_flower_list.flower_list:
             self.add_button_to_main(i[0])
 
-    def on_flower_name(self, ins, value):
+    def on_flower_name(self, ins, nm):
         """ Event - on creating new flower
         :param ins: ignored
         :param value: name of newly created screen
         :return: none
         """
-        self.main_flower_list.add_flower(value, None)
-        self.add_button_to_main(value)
+        self.main_flower_list.add_flower(name=nm, port=None)
+        self.add_button_to_main(nm)
 
     def bind_screen_button(self, ins):
         self.current = ins.text

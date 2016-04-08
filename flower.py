@@ -10,14 +10,24 @@ class Flower:
     flower class to keep single sensor group and flower data
     """
     def __init__(self, **kwargs):
+        self._f = None
+        self._listen = None
         self.param_dict = {}
+        self.update_flower(**kwargs)
 
+    def update_flower(self, **kwargs):
+        self.param_dict = {}
         for i in kwargs:
-            self.param_dict[i]=kwargs[i]
-
-        self._f = MagicFileWriter(self.name)
-        self.listen = AvrParser(name=self.name, port=self.port)
-        self.listen.bind(result=self.listener)  # result is ListProperty in Flower
+            self.param_dict[i] = kwargs[i]
+        if self.param_dict['port'] != 'None':
+            self._f = MagicFileWriter(self.name)
+            self._listen = AvrParser(name=self.name, port=self.port)
+            self._listen.bind(result=self.listener)  # result is ListProperty in Flower
+        else:
+            if self._f is None :
+                self._listen.remove()
+                self._f.remove()
+        return self.param_dict
 
     def listener(self, _, val):
         """ push data from serial port to flower display
@@ -47,22 +57,21 @@ class FlowerList:
         self.flower_list = []
         self.get_list()
 
-    def add_flower(self, dict):
+    def add_flower(self, **kwargs):
         """ add flower to the list
         :param li: flower properties list
         :return:  none
         """
-        self.flower_li.append(dict)
-        self.write_dict_to_file
+        self.flower_list.append(dump_kwargs(**kwargs))
+        self.write_list_to_file()
 
-    def remove_flower(self, dict):
+    def remove_flower(self, name):
         """ remove flower from the list
-        :param dict: flower properties dictionary
+        :param name: flower name
         :return:  none
         """
-        with
-        self.flower_list.remove(dict)
-        self.write_list_to_file
+        self.flower_list.remove(get_dict_from_key(name))
+        self.write_list_to_file()
 
     def write_list_to_file(self):
         filename = "data/all.json"
@@ -86,3 +95,16 @@ class FlowerList:
             self.flower_list = loads(json_data)
         except:
             self.flower_list = []
+
+
+def dump_kwargs(**kwargs):
+    _dict = {}
+    for i in kwargs:
+        _dict[i] = kwargs[i]
+    return _dict
+
+
+def get_dict_from_key(d, name):
+    _dict = d.get(name)
+    return _dict
+
