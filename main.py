@@ -26,7 +26,7 @@ class FlowerScreen(Screen):
         print(self.port_list)
 
     def on_chosen_port(self, ins, val):
-        print(val)
+        pass
 
 
 class Manager(ScreenManager):
@@ -49,6 +49,11 @@ class Manager(ScreenManager):
             self.add_button_to_main(i[0])
 
     def on_flower_name(self, ins, value):
+        """ Event - on creating new flower
+        :param ins: ignored
+        :param value: name of newly created screen
+        :return: none
+        """
         self.main_flower_list.add_flower(value, None)
         self.add_button_to_main(value)
 
