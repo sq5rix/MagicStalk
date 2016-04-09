@@ -23,7 +23,7 @@ class Manager(ScreenManager):
         self.main_screen.ids.stack.add_widget(b)
         f.populate_ports()
         f.set_button(b)
-        self.main_flower_list.add_flower(f)
+        # self.main_flower_list.add_flower(f)
         self.add_widget(f)
 
     def remove_button_from_main(self, data):

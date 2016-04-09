@@ -72,16 +72,16 @@ class Flower(FlowerScreen):
         """
         if val[0] == 'A':
             self.obj_avg_mst.text = val[1]
-            self._f.write_serial_line(datetime.datetime, ', ')
-            self._f.write_serial_line(str(val[1]), ', ')
         elif val[0] == 'M':
             self.obj_cur_mst.text = val[1]
         elif val[0] == 'T':
             self.obj_cur_temp.text = val[1]
-            self._f.write_serial_line(str(val[1]), ', ')
         elif val[0] == 'C':
             self.obj_adj_mst.text = val[1]
-            self._f.write_serial_line(str(val[1]), '\n' )
+            self._f.write_serial_line(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d, %H:%M, '))
+            self._f.write_serial_line(self.obj_cur_temp.text, ', ',
+                                      self.obj_avg_mst.text, ', ',
+                                      self.obj_cur_mst.text, '\n')
         else:
             pass
 
