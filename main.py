@@ -23,10 +23,10 @@ class FlowerScreen(Screen):
     def populate_ports(self):
         self.port_list = interface.list_serial_ports()
         self.port_list.append('None')
-        print(self.port_list)
 
     def on_chosen_port(self, ins, val):
-        pass
+        self.chosen_port = val
+        print(val)
 
 
 class Manager(ScreenManager):

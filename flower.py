@@ -17,8 +17,10 @@ class Flower:
         self.port = kwargs['port']
         self.scr = ObjectProperty(None)
         self.but = ObjectProperty(None)
+        # self.bind(self.scr.chosen_port, self.update_flower)
 
-    def update_flower(self):
+    def update_flower(self, ins, val):
+        self.port = val
         if self.port != 'None':
             self._f = MagicFileWriter(self.name)
             self._listen = AvrParser(name=self.name, port=self.port)
@@ -49,8 +51,9 @@ class Flower:
         else:
             pass
 
-    def set_screen(self, b):
-        self.scr = b
+    def set_screen(self, s):
+        self.scr = s
+        self.port = s.chosen_port
 
     def get_screen(self):
         return self.scr
