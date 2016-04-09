@@ -38,7 +38,7 @@ class Manager(ScreenManager):
     main_flower_list = FlowerList()
 
     def add_button_to_main(self, data):
-        b = Button(name=data['name'], size_hint=(0.2, 0.2))
+        b = Button(text=data['name'], size_hint=(0.2, 0.2))
         b.bind(on_release=self.bind_screen_button)
         self.main_screen.ids.stack.add_widget(b)
         m = FlowerScreen(name=data['name'])
