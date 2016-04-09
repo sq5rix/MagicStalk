@@ -13,16 +13,13 @@ class Flower:
     def __init__(self, **kwargs):
         self._f = None
         self._listen = None
-        self.param_dict = {}
-        self.update_flower(**kwargs)
+        self.name = kwargs['name']
+        self.port = kwargs['port']
         self.scr = ObjectProperty(None)
         self.but = ObjectProperty(None)
 
-    def update_flower(self, **kwargs):
-        self.param_dict = {}
-        for i in kwargs:
-            self.param_dict[i] = kwargs[i]
-        if self.param_dict['port'] != 'None':
+    def update_flower(self):
+        if self.port != 'None':
             self._f = MagicFileWriter(self.name)
             self._listen = AvrParser(name=self.name, port=self.port)
             self._listen.bind(result=self.listener)  # result is ListProperty in Flower
@@ -30,7 +27,7 @@ class Flower:
             if self._f is None :
                 self._listen.remove()
                 self._f.remove()
-        return self.param_dict
+        return
 
     def listener(self, _, val):
         """ push data from serial port to flower display
@@ -39,15 +36,15 @@ class Flower:
         :return: none
         """
         if val[0] == 'A':
-            self.obj_avg_mst.text = val[1]
+            self.scr.obj_avg_mst.text = val[1]
             self._f.write_serial_line(str(val[1]), ', ')
         elif val[0] == 'M':
-            self.obj_cur_mst.text = val[1]
+            self.scr.obj_cur_mst.text = val[1]
         elif val[0] == 'T':
-            self.obj_cur_temp.text = val[1]
+            self.scr.obj_cur_temp.text = val[1]
             self._f.write_serial_line(str(val[1]), ', ')
         elif val[0] == 'C':
-            self.obj_adj_mst.text = val[1]
+            self.scr.obj_adj_mst.text = val[1]
             self._f.write_serial_line(str(val[1]), '\n' )
         else:
             pass
@@ -73,19 +70,18 @@ class FlowerList:
         self.get_list()
 
     def add_flower(self, **kwargs):
-        """ add flower to the list
-        :param li: flower properties list
-        :return:  none
-        """
-        self.flower_list.append(dump_kwargs(**kwargs))
+        """ add flower to the list"""
+        f = Flower(**kwargs)
+        self.flower_list.append(f)
         self.write_list_to_file()
+        return f
 
-    def remove_flower(self, name):
+    def remove_flower(self, fl):
         """ remove flower from the list
-        :param name: flower name
+        :param fl: flower object
         :return:  none
         """
-        self.flower_list.remove(get_dict_from_key(name))
+        self.flower_list.remove(fl)
         self.write_list_to_file()
 
     def write_list_to_file(self):
@@ -97,19 +93,34 @@ class FlowerList:
             os.mkdir(d)
         try:
             f = open(filename, 'w')
-            f.write(dumps(self.flower_list))
+            f.write(dumps(self.save_flower_list()))
             f.close()
         except:
-            MagicError('cannot open file')
+            MagicError('write_file_to_list: cannot open file')
 
     def get_list(self):
         try:
             f = open('data/all.json')
             json_data = f.read()
             f.close()
-            self.flower_list = loads(json_data)
+            self.load_flower_list(loads(json_data))
         except:
             self.flower_list = []
+
+    def save_flower_list(self):
+        l = []
+        d = {}
+        for i in self.flower_list:
+            d['name'] = i.name
+            d['port'] = i.port
+            l.append(d)
+        print(l)
+        return l
+
+    def load_flower_list(self, json_data):
+        for i in json_data:
+            f = Flower(name=i['name'], port=i['port'])
+        self.flower_list.append(f)
 
 
 def dump_kwargs(**kwargs):

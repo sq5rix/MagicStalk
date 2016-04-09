@@ -38,11 +38,13 @@ class Manager(ScreenManager):
     main_flower_list = FlowerList()
 
     def add_button_to_main(self, data):
-        b = Button(text=data['name'], size_hint=(0.2, 0.2))
+        b = Button(text=data.name, size_hint=(0.2, 0.2))
+        data.set_button(b)
         b.bind(on_release=self.bind_screen_button)
         self.main_screen.ids.stack.add_widget(b)
-        m = FlowerScreen(name=data['name'])
+        m = FlowerScreen(name=data.name)
         m.populate_ports()
+        data.set_screen(m)
         self.add_widget(m)
 
     def remove_button_from_main(self, value):
@@ -58,12 +60,8 @@ class Manager(ScreenManager):
         :param nm: name of newly created screen
         :return: none
         """
-        if nm == '':
-            self.main_flower_list.remove_flower(nm)
-            self.remove_button_from_main(nm)
-        else:
-            self.main_flower_list.add_flower(name=nm, port=None)
-            self.add_button_to_main(nm)
+        f = self.main_flower_list.add_flower(name=nm, port=None)
+        self.add_button_to_main(f)
 
     def bind_screen_button(self, ins):
         self.current = ins.text
