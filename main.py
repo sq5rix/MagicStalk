@@ -34,13 +34,14 @@ class Manager(ScreenManager):
     main_screen = ObjectProperty(None)
     flower_screen = ObjectProperty(None)
     flower_name = StringProperty('')
+
     main_flower_list = FlowerList()
 
-    def add_button_to_main(self, value):
-        b = Button(text=value, size_hint=(0.2, 0.2))
+    def add_button_to_main(self, data):
+        b = Button(name=data['name'], size_hint=(0.2, 0.2))
         b.bind(on_release=self.bind_screen_button)
         self.main_screen.ids.stack.add_widget(b)
-        m = FlowerScreen(name=value)
+        m = FlowerScreen(name=data['name'])
         m.populate_ports()
         self.add_widget(m)
 
@@ -49,12 +50,12 @@ class Manager(ScreenManager):
 
     def populate_flower_list(self):
         for i in self.main_flower_list.flower_list:
-            self.add_button_to_main(i[0])
+            self.add_button_to_main(i)
 
     def on_flower_name(self, ins, nm):
         """ Event - on creating new flower
         :param ins: ignored
-        :param value: name of newly created screen
+        :param nm: name of newly created screen
         :return: none
         """
         if nm == '':
