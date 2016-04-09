@@ -1,32 +1,12 @@
 from kivy.app import App
-from kivy.properties import ObjectProperty, StringProperty, ListProperty
+from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
 from kivy.uix.button import Button
-from flower import FlowerList
-import interface
+from flower import FlowerList, Flower
 
 
 class MainScreen(Screen):
     pass
-
-
-class FlowerScreen(Screen):
-    """ screen with detailed flower data, connected, or small
-    """
-    obj_cur_mst = ObjectProperty(None)
-    obj_cur_temp = ObjectProperty(None)
-    obj_adj_mst = ObjectProperty(None)
-    obj_avg_mst = ObjectProperty(None)
-    port_list = ListProperty()
-    chosen_port = StringProperty()
-
-    def populate_ports(self):
-        self.port_list = interface.list_serial_ports()
-        self.port_list.append('None')
-
-    def on_chosen_port(self, ins, val):
-        self.chosen_port = val
-        print(val)
 
 
 class Manager(ScreenManager):
@@ -37,17 +17,16 @@ class Manager(ScreenManager):
 
     main_flower_list = FlowerList()
 
-    def add_button_to_main(self, data):
-        b = Button(text=data.name, size_hint=(0.2, 0.2))
-        data.set_button(b)
+    def add_button_to_main(self, f):
+        b = Button(text=f.name, size_hint=(0.2, 0.2))
         b.bind(on_release=self.bind_screen_button)
         self.main_screen.ids.stack.add_widget(b)
-        m = FlowerScreen(name=data.name)
-        m.populate_ports()
-        data.set_screen(m)
-        self.add_widget(m)
+        f.populate_ports()
+        f.set_button(b)
+        self.main_flower_list.add_flower(f)
+        self.add_widget(f)
 
-    def remove_button_from_main(self, value):
+    def remove_button_from_main(self, data):
         pass
 
     def populate_flower_list(self):
@@ -60,7 +39,7 @@ class Manager(ScreenManager):
         :param nm: name of newly created screen
         :return: none
         """
-        f = self.main_flower_list.add_flower(name=nm, port=None)
+        f = Flower(name=nm, port=None)
         self.add_button_to_main(f)
 
     def bind_screen_button(self, ins):

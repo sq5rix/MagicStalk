@@ -43,6 +43,9 @@ class SerialInterface:
         self.name = kwargs['name']
         self.port = kwargs['port']
 
+        print('serial name: ' + self.name)
+        print('serial port: ' + self.port)
+
         try:
             if self.port != 'None':
                 self.sp = serial.Serial(self.port, baudrate=38400)
@@ -80,7 +83,7 @@ class Parser(EventDispatcher):
             self._t.daemon = True
             self._t.start()
             self._stop = Event()
-            print(self._t.name)
+            print('new thread name = ' + self._t.name)
         except Exception as e:
             MagicError('Thread failed')
         self.val = ''

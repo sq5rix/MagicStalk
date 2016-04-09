@@ -6,14 +6,14 @@ class MagicFileWriter:
     """ open, write and read files
     """
     def __init__(self, name):
-        filename = "log/" + name
+        self.filename = "log/" + name
         d = os.path.dirname(self.filename)
         try:
             os.stat(d)
         except:
             os.mkdir(d)
         try:
-            self.f = open(filename, 'a')
+            self.f = open(self.filename, 'a')
         except:
             MagicError('cannot open file')
 
@@ -32,5 +32,5 @@ class MagicFileWriter:
             self.f.flush()
 
     def remove(self):
-        self.f.close()
+            self.f.close()
 
