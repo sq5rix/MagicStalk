@@ -12,20 +12,19 @@ import datetime
 class FlowerScreen(Screen):
     """ screen with detailed flower data, connected, or small
     """
-    obj_cur_mst = ObjectProperty(None)
-    obj_cur_temp = ObjectProperty(None)
-    obj_adj_mst = ObjectProperty(None)
-    obj_avg_mst = ObjectProperty(None)
+    delete_flower = BooleanProperty(False)  # simple flag to delete object
     port_list = ListProperty()
     chosen_port = StringProperty()
-    delete_flower = BooleanProperty(False)
 
-    def populate_ports(self):
-        self.port_list = interface.list_serial_ports()
-        self.port_list.append('None')
+    cur_mst = ObjectProperty(None)
+    cur_temp = ObjectProperty(None)
+    adj_mst = ObjectProperty(None)
+    avg_mst = ObjectProperty(None)
 
-    def on_chosen_port(self, ins, val):
-        self.chosen_port = val
+    def __init__(self, **kwargs):
+        super(FlowerScreen, self).__init__(**kwargs)
+        self.port_list = populate_ports()
+        # FlowerList.add_flower()
 
     def on_delete_flower(self, ins, val):
         self.delete_flower = True
@@ -43,11 +42,10 @@ class Flower(FlowerScreen):
         self.port = kwargs['port']
         self.scr = ObjectProperty(None)
         self.but = ObjectProperty(None)
-        self.bind(chosen_port=self.update_flower)
+        self.bind(chosen_port=self.connect_flower_to_sensor)
         self.bind(delete_flower=self.delete_this_flower)
-        self.populate_ports()
 
-    def update_flower(self, ins, val):
+    def connect_flower_to_sensor(self, ins, val):
         print('port in Flower = ' + val)
         self.port = val
         if self.port != 'None':
@@ -71,19 +69,18 @@ class Flower(FlowerScreen):
         :return: none
         """
         if val[0] == 'A':
-            self.obj_avg_mst.text = val[1]
+            self.avg_mst.text = val[1]
         elif val[0] == 'M':
-            self.obj_cur_mst.text = val[1]
+            self.cur_mst.text = val[1]
         elif val[0] == 'T':
-            self.obj_cur_temp.text = val[1]
+            self.cur_temp.text = val[1]
         elif val[0] == 'C':
-            self.obj_adj_mst.text = val[1]
+            self.adj_mst.text = val[1]
             self._f.write_serial_line(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d, %H:%M, '))
-            self._f.write_serial_line(self.obj_cur_temp.text, ', ',
-                                      self.obj_avg_mst.text, ', ',
-                                      self.obj_cur_mst.text, '\n')
-        else:
-            pass
+            self._f.write_serial_line(
+                        self.cur_temp.text, ', ',
+                        self.avg_mst.text, ', ',
+                        self.cur_mst.text, '\n')
 
     def set_button(self, b):
         self.but = b
@@ -100,7 +97,7 @@ class FlowerList:
         self.get_list()
 
     def add_flower(self, f):
-        """ add flower to the list"""
+        """ add flower to the list """
         self.flower_list.append(f)
         self.write_list_to_file()
         return f
@@ -129,9 +126,8 @@ class FlowerList:
 
     def get_list(self):
         try:
-            f = open('data/all.json')
-            json_data = f.read()
-            f.close()
+            with open('data/all.json') as f:
+                json_data = f.read()
             self.load_flower_list(loads(json_data))
         except:
             self.flower_list = []
@@ -150,6 +146,12 @@ class FlowerList:
         print(json_data)
         for i in json_data:
             self.flower_list.append(Flower(name=i['name'], port=i['port']))
+
+
+def populate_ports():
+    x = interface.list_serial_ports()
+    x.append('None')
+    return x
 
 
 def dump_kwargs(**kwargs):

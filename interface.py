@@ -61,8 +61,8 @@ class SerialInterface:
         try:
             c = str(self.sp.read(), encoding='UTF-8')
             return c
-        except Exception as e:
-            MagicError('cannot read from port: '+self.port)
+        except:
+            MagicError('very bad problem: '+self.port)
             return ''
 
     def write_char(self, c):

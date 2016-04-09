@@ -18,7 +18,7 @@
 <TextInput>:
     font_size: self.height / 4
 
-<MainScreen>:
+<MainScreen@Screen>:
     id: main_screen
     AnchorLayout:
         anchor_x: 'left'
@@ -35,11 +35,11 @@
 
 <FlowerScreen>:
 
-    obj_cur_mst: cur_mst
-    obj_avg_mst: avg_mst
-    obj_cur_temp: cur_temp
-    obj_adj_mst: adj_mst
-    obj_usb_port: usb_port
+    cur_mst:  cur_mst
+    avg_mst:  avg_mst
+    cur_temp: cur_temp
+    adj_mst:  adj_mst
+    usb_port: usb_port
 
     AnchorLayout:
         anchor_x: 'left'

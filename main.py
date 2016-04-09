@@ -5,10 +5,6 @@ from kivy.uix.button import Button
 from flower import FlowerList, Flower
 
 
-class MainScreen(Screen):
-    pass
-
-
 class Manager(ScreenManager):
 
     main_screen = ObjectProperty(None)
@@ -21,7 +17,6 @@ class Manager(ScreenManager):
         b = Button(text=f.name, size_hint=(0.2, 0.2))
         b.bind(on_release=self.bind_screen_button)
         self.main_screen.ids.stack.add_widget(b)
-        f.populate_ports()
         f.set_button(b)
         # self.main_flower_list.add_flower(f)
         self.add_widget(f)
