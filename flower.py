@@ -118,9 +118,9 @@ class FlowerList:
         return l
 
     def load_flower_list(self, json_data):
+        print(json_data)
         for i in json_data:
-            f = Flower(name=i['name'], port=i['port'])
-        self.flower_list.append(f)
+            self.flower_list.append(Flower(name=i['name'], port=i['port']))
 
 
 def dump_kwargs(**kwargs):
