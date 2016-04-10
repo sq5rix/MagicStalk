@@ -32,26 +32,29 @@ class Flower:
     flower class to keep single sensor group and flower data
     """
     def __init__(self, my_manager, **kwargs):
-        # super(Flower, self).__init__(**kwargs)
 
         self.my_manager = my_manager
 
         self.name = kwargs['name']
         self._listen = None
         self._f = None
+        self.port = kwargs['port']
         self.scr = FlowerScreen(name=self.name)
+        self.scr.ids.usb_port.text = self.port
         self.scr.bind(delete_flower=self.delete_this_flower)
         self.scr.bind(chosen_port=self.connect_flower_to_sensor)
-        self.port = kwargs['port']
         self.but = self.add_button_to_main()
+        # self.connect_flower_to_sensor()
 
-    def connect_flower_to_sensor(self, ins, val):
-        print('port in Flower = ' + val)
+    def connect_flower_to_sensor(self, _, val):
         self.port = val
         self.scr.chosen_port = val
+        self.run_serial()
+
+    def run_serial(self):
         if self.port != 'None':
             self._f = MagicFileWriter(self.name)
-            self._listen = AvrParser(name=self.name, port=self.port)
+            self._listen = AvrParser(self.name, self.port)
             self._listen.bind(result=self.listener)  # result is ListProperty in Flower
             self.my_manager.main_flower_list.write_list_to_file()
 
@@ -71,9 +74,9 @@ class Flower:
             self.scr.adj_mst.text = val[1]
             self._f.write_serial_line(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d, %H:%M, '))
             self._f.write_serial_line(
-                        self.scr.cur_temp.text, ', ',
-                        self.scr.avg_mst.text, ', ',
-                        self.scr.cur_mst.text, '\n')
+                self.scr.cur_temp.text, ', ',
+                self.scr.avg_mst.text, ', ',
+                self.scr.cur_mst.text, '\n')
 
     def add_button_to_main(self):
         b = Button(text=self.name, size_hint=(0.2, 0.2))
@@ -87,17 +90,15 @@ class Flower:
     def delete_this_flower(self, ins, val):
         self.name = ''
         self.port = 'None'
-        if self._f:
-            self._f.remove()
-        if self._listen:
-            self._listen.remove()
+        self._f.remove()
+        self._listen.remove()
         self.my_manager.current = 'Main Screen'
         self.my_manager.main_screen.ids.stack.remove_widget(self.but)
         self.my_manager.remove_widget(self.scr)
         self.my_manager.main_flower_list.remove_flower(self)
 
-    def bind_screen_button(self, val):
-        self.my_manager.current = val.text
+    def bind_screen_button(self, _):
+        self.my_manager.current = self.name
 
     def set_button(self, b):
         self.but = b

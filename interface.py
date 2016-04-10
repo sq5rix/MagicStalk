@@ -37,11 +37,11 @@ def list_serial_ports():
 
 
 class SerialInterface:
-    """ serial interface opener """
-    def __init__(self, **kwargs):
+    """ serial interface connect and read/write """
+    def __init__(self, name, port):
 
-        self.name = kwargs['name']
-        self.port = kwargs['port']
+        self.name = name
+        self.port = port
 
         print('serial name: ' + self.name)
         print('serial port: ' + self.port)
@@ -86,8 +86,9 @@ class Parser(EventDispatcher):
             print('new thread name = ' + self._t.name)
         except Exception as e:
             MagicError('Thread failed')
-        self.val = ''
-        self.command = ''
+        finally:
+            self.val = ''
+            self.command = ''
 
     def parse(self):
         """ parse event on change will send command and value - abstract, works with interface """

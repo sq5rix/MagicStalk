@@ -14,9 +14,9 @@ class Manager(ScreenManager):
         super(Manager, self).__init__(**kwargs)
         self.main_flower_list = FlowerManager(self)
 
-    def on_flower_name(self, ins, nm):
+    def on_flower_name(self, _, nm):
         """ Event - on creating new flower
-        :param ins: ignored
+        :param _: ignored
         :param nm: manager name
         :return: none
         """

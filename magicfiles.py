@@ -29,7 +29,7 @@ class MagicFileWriter:
                 MagicError('cannot open file')
         for i in args:
             self.f.write(i)
-            self.f.flush()
+        self.f.flush()
 
     def remove(self):
             self.f.close()
