@@ -30,30 +30,28 @@ class FlowerScreen(Screen):
         self.delete_flower = True
 
 
-class Flower(FlowerScreen):
+class Flower:
     """
     flower class to keep single sensor group and flower data
     """
     def __init__(self, my_manager, **kwargs):
-        super(Flower, self).__init__(**kwargs)
+        # super(Flower, self).__init__(**kwargs)
 
         self.my_manager = my_manager
 
         self.name = kwargs['name']
         self._listen = None
         self._f = None
-        self.bind(delete_flower=self.delete_this_flower)
-        self.bind(chosen_port=self.connect_flower_to_sensor)
-        try:
-            self.port = kwargs['port']
-        except:
-            pass
+        self.scr = FlowerScreen(name=self.name)
+        self.scr.bind(delete_flower=self.delete_this_flower)
+        self.scr.bind(chosen_port=self.connect_flower_to_sensor)
+        self.port = kwargs['port']
         self.but = self.add_button_to_main()
 
     def connect_flower_to_sensor(self, ins, val):
         print('port in Flower = ' + val)
         self.port = val
-        self.chosen_port = val
+        self.scr.chosen_port = val
         if self.port != 'None':
             self._f = MagicFileWriter(self.name)
             self._listen = AvrParser(name=self.name, port=self.port)
@@ -62,7 +60,7 @@ class Flower(FlowerScreen):
     def delete_this_flower(self, ins, val):
         self.name = ''
         self.port = 'None'
-        self.remove_widget(self.but)
+        self.scr.remove_widget(self.but)
         if self._f:
             self._f.remove()
         if self._listen:
@@ -75,30 +73,30 @@ class Flower(FlowerScreen):
         :return: none
         """
         if val[0] == 'A':
-            self.avg_mst.text = val[1]
+            self.scr.avg_mst.text = val[1]
         elif val[0] == 'M':
-            self.cur_mst.text = val[1]
+            self.scr.cur_mst.text = val[1]
         elif val[0] == 'T':
-            self.cur_temp.text = val[1]
+            self.scr.cur_temp.text = val[1]
         elif val[0] == 'C':
-            self.adj_mst.text = val[1]
+            self.scr.adj_mst.text = val[1]
             self._f.write_serial_line(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d, %H:%M, '))
             self._f.write_serial_line(
-                        self.cur_temp.text, ', ',
-                        self.avg_mst.text, ', ',
-                        self.cur_mst.text, '\n')
+                        self.scr.cur_temp.text, ', ',
+                        self.scr.avg_mst.text, ', ',
+                        self.scr.cur_mst.text, '\n')
 
     def add_button_to_main(self):
         b = Button(text=self.name, size_hint=(0.2, 0.2))
         b.bind(on_release=self.bind_screen_button)
-        self.my_manager.my_manager.main_screen.ids.stack.add_widget(b)
-        self.ids.text_input.text = self.name
-        self.ids.text_input.readonly = True
-        self.my_manager.my_manager.add_widget(self)
+        self.my_manager.main_screen.ids.stack.add_widget(b)
+        self.scr.ids.text_input.text = self.name
+        self.scr.ids.text_input.readonly = True
+        self.my_manager.add_widget(self.scr)
         return b
 
     def bind_screen_button(self, val):
-        self.my_manager.my_manager.current = val.text
+        self.my_manager.current = val.text
 
     def set_button(self, b):
         self.but = b
@@ -117,12 +115,12 @@ class FlowerManager:
 
     def __init__(self, my_manager):
         self.flower_list = []
+        self.my_mgr = my_manager
         self.get_flower_list()
-        self.my_manager = my_manager
 
     def add_flower(self, **kwargs):
         """ add flower to the list """
-        f = Flower(self, **kwargs)
+        f = Flower(self.my_mgr, **kwargs)
         self.flower_list.append(f)
         self.write_list_to_file()
         return f
@@ -142,25 +140,28 @@ class FlowerManager:
             os.stat(d)
         except:
             os.mkdir(d)
-        try:
-            with open(self.DATA, 'w') as f:
-                f.write(dumps(self.create_flower_list()))
-        except:
-            MagicError('cannot open file '+self.DATA)
+        # try:
+        with open(self.DATA, 'w') as f:
+            f.write(dumps(self.create_flower_list()))
+        # except:
+        #     MagicError('cannot open file '+self.DATA)
 
     def get_flower_list(self):
-        try:
-            with open(self.DATA) as f:
-                json_data = f.read()
-            self.load_flowers(loads(json_data))
-        except:
-            self.flower_list = []
+        # try:
+        with open(self.DATA) as f:
+            json_data = f.read()
+        self.load_flowers(loads(json_data))
+        #     print(loads(json_data))
+        #     self.load_flowers(loads(json_data))
+        # except:
+        #     self.flower_list = []
 
     def create_flower_list(self):
         return [i.dump_flower() for i in self.flower_list]
 
-    def load_flowers(self, json_data):
-        return [self.add_flower(name=i['name'], port=i['port']) for i in json_data]
+    def load_flowers(self, data):
+        x = [self.add_flower(name=i['name'], port=i['port']) for i in data]
+        return x
 
 
 def populate_ports():

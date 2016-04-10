@@ -20,7 +20,7 @@ class Manager(ScreenManager):
         :param nm: ignored
         :return: none
         """
-        self.main_flower_list.add_flower(name=nm)
+        self.main_flower_list.add_flower(name=nm, port='')
 
 
 class MagicStalkApp(App):
