@@ -24,7 +24,6 @@ class FlowerScreen(Screen):
     def __init__(self, **kwargs):
         super(FlowerScreen, self).__init__(**kwargs)
         self.port_list = populate_ports()
-        # FlowerList.add_flower()
 
     def on_delete_flower(self, ins, val):
         self.delete_flower = True
@@ -36,12 +35,17 @@ class Flower(FlowerScreen):
     """
     def __init__(self, **kwargs):
         super(Flower, self).__init__()
+
+        self.my_manager = ObjectProperty(None)
+
+        self.name = kwargs['name']
+        try:
+            self.port = kwargs['port']
+        except:
+            self.port = self.chosen_port
+        self.but = ObjectProperty(None)
         self._f = None
         self._listen = None
-        self.name = kwargs['name']
-        self.port = kwargs['port']
-        self.scr = ObjectProperty(None)
-        self.but = ObjectProperty(None)
         self.bind(chosen_port=self.connect_flower_to_sensor)
         self.bind(delete_flower=self.delete_this_flower)
 
@@ -88,16 +92,23 @@ class Flower(FlowerScreen):
     def get_button(self, b):
         return self.but
 
+    def dump_flower(self):
+        return {'name': self.name, 'port': self.port}
 
-class FlowerList:
+
+class FlowerManager:
     """ List of flowers, on main screen
     """
+    DATA = 'data/all.json'
+
     def __init__(self):
         self.flower_list = []
-        self.get_list()
+        self.get_flower_list()
 
-    def add_flower(self, f):
+    def add_flower(self, **kwargs):
         """ add flower to the list """
+        f = Flower(**kwargs)
+        f.my_manager = self
         self.flower_list.append(f)
         self.write_list_to_file()
         return f
@@ -108,44 +119,34 @@ class FlowerList:
         :return:  none
         """
         self.flower_list.remove(fl)
+        del fl
         self.write_list_to_file()
 
     def write_list_to_file(self):
-        filename = "data/all.json"
-        d = os.path.dirname(filename)
+        d = os.path.dirname(self.DATA)
         try:
             os.stat(d)
         except:
             os.mkdir(d)
         try:
-            f = open(filename, 'w')
-            f.write(dumps(self.save_flower_list()))
-            f.close()
+            with open(self.DATA, 'w') as f:
+                f.write(dumps(self.create_flower_list()))
         except:
-            MagicError('write_file_to_list: cannot open file')
+            MagicError('cannot open file '+self.DATA)
 
-    def get_list(self):
+    def get_flower_list(self):
         try:
-            with open('data/all.json') as f:
+            with open(self.DATA) as f:
                 json_data = f.read()
-            self.load_flower_list(loads(json_data))
+            self.load_flowers(loads(json_data))
         except:
             self.flower_list = []
 
-    def save_flower_list(self):
-        l = []
-        d = {}
-        for i in self.flower_list:
-            d['name'] = i.name
-            d['port'] = i.port
-            l.append(d)
-        print(l)
-        return l
+    def create_flower_list(self):
+        return [i.dump_flower() for i in self.flower_list]
 
-    def load_flower_list(self, json_data):
-        print(json_data)
-        for i in json_data:
-            self.flower_list.append(Flower(name=i['name'], port=i['port']))
+    def load_flowers(self, json_data):
+        return [self.add_flower(name=i['name'], port=i['port']) for i in json_data]
 
 
 def populate_ports():
