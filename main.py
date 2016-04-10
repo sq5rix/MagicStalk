@@ -16,8 +16,8 @@ class Manager(ScreenManager):
 
     def on_flower_name(self, ins, nm):
         """ Event - on creating new flower
-        :param ins: manager name
-        :param nm: ignored
+        :param ins: ignored
+        :param nm: manager name
         :return: none
         """
         self.main_flower_list.add_flower(name=nm, port='')

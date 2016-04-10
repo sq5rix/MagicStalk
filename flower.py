@@ -26,9 +26,6 @@ class FlowerScreen(Screen):
         self.port_list = populate_ports()
         super(FlowerScreen, self).__init__(**kwargs)
 
-    def on_delete_flower(self, ins, val):
-        self.delete_flower = True
-
 
 class Flower:
     """
@@ -56,15 +53,7 @@ class Flower:
             self._f = MagicFileWriter(self.name)
             self._listen = AvrParser(name=self.name, port=self.port)
             self._listen.bind(result=self.listener)  # result is ListProperty in Flower
-
-    def delete_this_flower(self, ins, val):
-        self.name = ''
-        self.port = 'None'
-        self.scr.remove_widget(self.but)
-        if self._f:
-            self._f.remove()
-        if self._listen:
-            self._listen.remove()
+            self.my_manager.main_flower_list.write_list_to_file()
 
     def listener(self, _, val):
         """ push data from serial port to flower display
@@ -94,6 +83,18 @@ class Flower:
         self.scr.ids.text_input.readonly = True
         self.my_manager.add_widget(self.scr)
         return b
+
+    def delete_this_flower(self, ins, val):
+        self.name = ''
+        self.port = 'None'
+        if self._f:
+            self._f.remove()
+        if self._listen:
+            self._listen.remove()
+        self.my_manager.current = 'Main Screen'
+        self.my_manager.main_screen.ids.stack.remove_widget(self.but)
+        self.my_manager.remove_widget(self.scr)
+        self.my_manager.main_flower_list.remove_flower(self)
 
     def bind_screen_button(self, val):
         self.my_manager.current = val.text
@@ -131,6 +132,7 @@ class FlowerManager:
         :return:  none
         """
         self.flower_list.remove(fl)
+        del fl.but
         del fl
         self.write_list_to_file()
 
@@ -140,11 +142,11 @@ class FlowerManager:
             os.stat(d)
         except:
             os.mkdir(d)
-        # try:
-        with open(self.DATA, 'w') as f:
-            f.write(dumps(self.create_flower_list()))
-        # except:
-        #     MagicError('cannot open file '+self.DATA)
+        try:
+            with open(self.DATA, 'w') as f:
+                f.write(dumps(self.create_flower_list()))
+        except:
+            MagicError('cannot open file '+self.DATA)
 
     def get_flower_list(self):
         # try:
