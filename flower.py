@@ -149,14 +149,12 @@ class FlowerManager:
             MagicError('cannot open file '+self.DATA)
 
     def get_flower_list(self):
-        # try:
-        with open(self.DATA) as f:
-            json_data = f.read()
-        self.load_flowers(loads(json_data))
-        #     print(loads(json_data))
-        #     self.load_flowers(loads(json_data))
-        # except:
-        #     self.flower_list = []
+        try:
+            with open(self.DATA) as f:
+                json_data = f.read()
+            self.load_flowers(loads(json_data))
+        except:
+            self.flower_list = []
 
     def create_flower_list(self):
         return [i.dump_flower() for i in self.flower_list]
