@@ -1,8 +1,7 @@
 from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
-from kivy.uix.button import Button
-from flower import FlowerManager, Flower
+from flower import FlowerManager
 
 
 class Manager(ScreenManager):
@@ -11,21 +10,9 @@ class Manager(ScreenManager):
     flower_screen = ObjectProperty(None)
     flower_name = StringProperty('')
 
-    main_flower_list = FlowerManager()
-
-    def add_button_to_main(self, f):
-        b = Button(text=f.name, size_hint=(0.2, 0.2))
-        b.bind(on_release=self.bind_screen_button)
-        self.main_screen.ids.stack.add_widget(b)
-        f.set_button(b)
-        self.add_widget(f)
-
-    def remove_button_from_main(self, data):
-        pass
-
-    def populate_flower_list(self):
-        for i in self.main_flower_list.flower_list:
-            self.add_button_to_main(i)
+    def __init__(self, **kwargs):
+        super(Manager, self).__init__(**kwargs)
+        self.main_flower_list = FlowerManager(self)
 
     def on_flower_name(self, ins, nm):
         """ Event - on creating new flower
@@ -33,13 +20,7 @@ class Manager(ScreenManager):
         :param nm: ignored
         :return: none
         """
-        f = self.main_flower_list.add_flower(name=nm)
-        self.add_button_to_main(f)
-
-    def bind_screen_button(self, ins):
-        self.current = ins.text
-        self.current_screen.ids.text_input.text = ins.text
-        self.current_screen.ids.text_input.readonly = True
+        self.main_flower_list.add_flower(name=nm)
 
 
 class MagicStalkApp(App):
@@ -48,7 +29,6 @@ class MagicStalkApp(App):
     def build(self):
         self.title = 'MagicStalk'
         m = Manager(transition=WipeTransition())
-        m.populate_flower_list()
         return m
 
 

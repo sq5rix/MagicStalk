@@ -4,6 +4,7 @@ from magicerror import MagicError
 from json import dumps, loads
 from kivy.properties import ObjectProperty, ListProperty, StringProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
+from kivy.uix.button import Button
 import interface
 import os
 import datetime
@@ -22,8 +23,8 @@ class FlowerScreen(Screen):
     avg_mst = ObjectProperty(None)
 
     def __init__(self, **kwargs):
-        super(FlowerScreen, self).__init__(**kwargs)
         self.port_list = populate_ports()
+        super(FlowerScreen, self).__init__(**kwargs)
 
     def on_delete_flower(self, ins, val):
         self.delete_flower = True
@@ -33,25 +34,26 @@ class Flower(FlowerScreen):
     """
     flower class to keep single sensor group and flower data
     """
-    def __init__(self, **kwargs):
-        super(Flower, self).__init__()
+    def __init__(self, my_manager, **kwargs):
+        super(Flower, self).__init__(**kwargs)
 
-        self.my_manager = ObjectProperty(None)
+        self.my_manager = my_manager
 
         self.name = kwargs['name']
+        self._listen = None
+        self._f = None
+        self.bind(delete_flower=self.delete_this_flower)
+        self.bind(chosen_port=self.connect_flower_to_sensor)
         try:
             self.port = kwargs['port']
         except:
-            self.port = self.chosen_port
-        self.but = ObjectProperty(None)
-        self._f = None
-        self._listen = None
-        self.bind(chosen_port=self.connect_flower_to_sensor)
-        self.bind(delete_flower=self.delete_this_flower)
+            pass
+        self.but = self.add_button_to_main()
 
     def connect_flower_to_sensor(self, ins, val):
         print('port in Flower = ' + val)
         self.port = val
+        self.chosen_port = val
         if self.port != 'None':
             self._f = MagicFileWriter(self.name)
             self._listen = AvrParser(name=self.name, port=self.port)
@@ -86,6 +88,18 @@ class Flower(FlowerScreen):
                         self.avg_mst.text, ', ',
                         self.cur_mst.text, '\n')
 
+    def add_button_to_main(self):
+        b = Button(text=self.name, size_hint=(0.2, 0.2))
+        b.bind(on_release=self.bind_screen_button)
+        self.my_manager.my_manager.main_screen.ids.stack.add_widget(b)
+        self.ids.text_input.text = self.name
+        self.ids.text_input.readonly = True
+        self.my_manager.my_manager.add_widget(self)
+        return b
+
+    def bind_screen_button(self, val):
+        self.my_manager.my_manager.current = val.text
+
     def set_button(self, b):
         self.but = b
 
@@ -101,14 +115,14 @@ class FlowerManager:
     """
     DATA = 'data/all.json'
 
-    def __init__(self):
+    def __init__(self, my_manager):
         self.flower_list = []
         self.get_flower_list()
+        self.my_manager = my_manager
 
     def add_flower(self, **kwargs):
         """ add flower to the list """
-        f = Flower(**kwargs)
-        f.my_manager = self
+        f = Flower(self, **kwargs)
         self.flower_list.append(f)
         self.write_list_to_file()
         return f
