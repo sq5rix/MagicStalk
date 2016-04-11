@@ -6,7 +6,7 @@ class MagicFileWriter:
     """ open, write and read files
     """
     def __init__(self, name):
-        self.filename = "log/" + name
+        self.filename = "log/" + name + '.csv'
         d = os.path.dirname(self.filename)
         try:
             os.stat(d)

@@ -5,6 +5,9 @@ from json import dumps, loads
 from kivy.properties import ObjectProperty, ListProperty, StringProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
 from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.label import Label
 import interface
 import os
 import datetime
@@ -38,6 +41,8 @@ class Flower:
         self.name = kwargs['name']
         self._listen = None
         self._f = None
+        self.small_label = ObjectProperty(None)
+        self.but = ObjectProperty(None)
         self.port = kwargs['port']
         self.scr = FlowerScreen(name=self.name)
         self.scr.ids.usb_port.text = self.port
@@ -68,6 +73,7 @@ class Flower:
             self.scr.avg_mst.text = val[1]
         elif val[0] == 'M':
             self.scr.cur_mst.text = val[1]
+            self.small_label.text = val[1]
         elif val[0] == 'T':
             self.scr.cur_temp.text = val[1]
         elif val[0] == 'C':
@@ -79,9 +85,16 @@ class Flower:
                 self.scr.adj_mst.text, '\n')
 
     def add_button_to_main(self):
-        self.but = Button(text=self.name, size_hint=(0.2, 0.2))
+        anchor = AnchorLayout(size_hint=(0.2, 0.2))
+        self.my_manager.main_screen.ids.stack.add_widget(anchor)
+        self.but = Button()
         self.but.bind(on_release=self.bind_screen_button)
-        self.my_manager.main_screen.ids.stack.add_widget(self.but)
+        anchor.add_widget(self.but)
+        box = BoxLayout(orientation='vertical')
+        anchor.add_widget(box)
+        box.add_widget(Label(text=self.name))
+        self.small_label = Label(id='small_moisture', text='')
+        box.add_widget(self.small_label)
         self.scr.ids.text_input.text = self.name
         self.scr.ids.text_input.readonly = True
         self.my_manager.add_widget(self.scr)
