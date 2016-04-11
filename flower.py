@@ -17,8 +17,8 @@ class FlowerScreen(Screen):
     """ screen with detailed flower data, connected, or small
     """
     delete_flower = BooleanProperty(False)  # simple flag to delete object
-    port_list = ListProperty()
-    chosen_port = StringProperty()
+    port_list = ListProperty('None')
+    chosen_port = StringProperty('None')
 
     cur_mst = ObjectProperty(None)
     cur_temp = ObjectProperty(None)
