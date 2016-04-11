@@ -38,16 +38,16 @@ def list_serial_ports():
 
 class SerialInterface:
     """ serial interface connect and read/write """
-    def __init__(self, name, port):
+    def __init__(self, **kwargs):
 
-        self.name = name
-        self.port = port
+        self.name = kwargs['name']
+        self.port = kwargs['port']
 
         print('serial name: ' + self.name)
         print('serial port: ' + self.port)
 
         try:
-            if self.port != 'None':
+            if self.port.lower() != 'none':
                 self.sp = serial.Serial(self.port, baudrate=38400)
             elif self.sp.is_open():
                 self.sp.close()
@@ -62,7 +62,7 @@ class SerialInterface:
             c = str(self.sp.read(), encoding='UTF-8')
             return c
         except:
-            MagicError('very bad problem: '+self.port)
+            MagicError('very bad: '+self.port)
             return ''
 
     def write_char(self, c):

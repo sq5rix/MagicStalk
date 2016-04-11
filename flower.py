@@ -41,22 +41,22 @@ class Flower:
         self.port = kwargs['port']
         self.scr = FlowerScreen(name=self.name)
         self.scr.ids.usb_port.text = self.port
-        self.scr.bind(delete_flower=self.delete_this_flower)
         self.scr.bind(chosen_port=self.connect_flower_to_sensor)
-        self.but = self.add_button_to_main()
-        # self.connect_flower_to_sensor()
+        self.scr.bind(delete_flower=self.delete_this_flower)
+        self.add_button_to_main()
+        self.run_serial()
 
     def connect_flower_to_sensor(self, _, val):
         self.port = val
-        self.scr.chosen_port = val
+        # self.scr.chosen_port = val
         self.run_serial()
+        self.my_manager.main_flower_list.write_list_to_file()
 
     def run_serial(self):
-        if self.port != 'None':
+        if self.port.lower() != 'none':
             self._f = MagicFileWriter(self.name)
-            self._listen = AvrParser(self.name, self.port)
+            self._listen = AvrParser(name=self.name, port=self.port)
             self._listen.bind(result=self.listener)  # result is ListProperty in Flower
-            self.my_manager.main_flower_list.write_list_to_file()
 
     def listener(self, _, val):
         """ push data from serial port to flower display
@@ -76,16 +76,15 @@ class Flower:
             self._f.write_serial_line(
                 self.scr.cur_temp.text, ', ',
                 self.scr.avg_mst.text, ', ',
-                self.scr.cur_mst.text, '\n')
+                self.scr.adj_mst.text, '\n')
 
     def add_button_to_main(self):
-        b = Button(text=self.name, size_hint=(0.2, 0.2))
-        b.bind(on_release=self.bind_screen_button)
-        self.my_manager.main_screen.ids.stack.add_widget(b)
+        self.but = Button(text=self.name, size_hint=(0.2, 0.2))
+        self.but.bind(on_release=self.bind_screen_button)
+        self.my_manager.main_screen.ids.stack.add_widget(self.but)
         self.scr.ids.text_input.text = self.name
         self.scr.ids.text_input.readonly = True
         self.my_manager.add_widget(self.scr)
-        return b
 
     def delete_this_flower(self, ins, val):
         self.name = ''
