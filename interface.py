@@ -47,7 +47,7 @@ class SerialInterface:
         print('serial port: ' + self.port)
 
         try:
-            if self.port.lower() != 'none':
+            if (self.port.lower() != 'none') and (self.port != ''):
                 self.sp = serial.Serial(self.port, baudrate=38400)
             elif self.sp.is_open():
                 self.sp.close()

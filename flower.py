@@ -58,7 +58,8 @@ class Flower:
         self.my_manager.main_flower_list.write_list_to_file()
 
     def run_serial(self):
-        if self.port.lower() != 'none':
+        if (self.port.lower() != 'none') and (self.port != ''):
+            print('serial >{}<'.format(self.port.lower()))
             self._f = MagicFileWriter(self.name)
             self._listen = AvrParser(name=self.name, port=self.port)
             self._listen.bind(result=self.listener)  # result is ListProperty in Flower
