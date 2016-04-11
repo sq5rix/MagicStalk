@@ -42,6 +42,7 @@ class Flower:
         self._listen = None
         self._f = None
         self.small_label = ObjectProperty(None)
+        self.anchor = ObjectProperty(None)
         self.but = ObjectProperty(None)
         self.port = kwargs['port']
         self.scr = FlowerScreen(name=self.name)
@@ -86,13 +87,13 @@ class Flower:
                 self.scr.adj_mst.text, '\n')
 
     def add_button_to_main(self):
-        anchor = AnchorLayout(size_hint=(0.2, 0.2))
-        self.my_manager.main_screen.ids.stack.add_widget(anchor)
+        self.anchor = AnchorLayout(id='anchor', size_hint=(0.2, 0.2))
+        self.my_manager.main_screen.ids.stack.add_widget(self.anchor)
         self.but = Button()
         self.but.bind(on_release=self.bind_screen_button)
-        anchor.add_widget(self.but)
+        self.anchor.add_widget(self.but)
         box = BoxLayout(orientation='vertical')
-        anchor.add_widget(box)
+        self.anchor.add_widget(box)
         box.add_widget(Label(text=self.name))
         self.small_label = Label(id='small_moisture', text='')
         box.add_widget(self.small_label)
@@ -103,10 +104,12 @@ class Flower:
     def delete_this_flower(self, ins, val):
         self.name = ''
         self.port = 'None'
-        self._f.remove()
-        self._listen.remove()
+        if self._f:
+            self._f.remove()
+        if self._listen:
+            self._listen.remove()
         self.my_manager.current = 'Main Screen'
-        self.my_manager.main_screen.ids.stack.remove_widget(self.but)
+        self.my_manager.main_screen.ids.stack.remove_widget(self.anchor)
         self.my_manager.remove_widget(self.scr)
         self.my_manager.main_flower_list.remove_flower(self)
 
@@ -116,7 +119,7 @@ class Flower:
     def set_button(self, b):
         self.but = b
 
-    def get_button(self, b):
+    def get_button(self):
         return self.but
 
     def dump_flower(self):

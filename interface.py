@@ -62,8 +62,12 @@ class SerialInterface:
             c = str(self.sp.read(), encoding='UTF-8')
             return c
         except:
-            MagicError('very bad: '+self.port)
-            return ''
+            try:
+                self.sp.close()
+                self.sp = serial.Serial(self.port, baudrate=38400)
+                return 'R'
+            except:
+                return 'X'
 
     def write_char(self, c):
         try:
