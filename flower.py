@@ -8,7 +8,7 @@ from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
-import interface
+from interface import populate_ports
 import os
 import datetime
 
@@ -39,26 +39,34 @@ class Flower:
         self.my_manager = my_manager
 
         self.name = kwargs['name']
+        self.port = kwargs['port']
+
         self._listen = None
         self._f = None
+
         self.small_label = ObjectProperty(None)
         self.anchor = ObjectProperty(None)
         self.but = ObjectProperty(None)
-        self.port = kwargs['port']
+
         self.scr = FlowerScreen(name=self.name)
         self.scr.ids.usb_port.text = self.port
+
         self.scr.bind(chosen_port=self.connect_flower_to_sensor)
         self.scr.bind(delete_flower=self.delete_this_flower)
+
         self.add_button_to_main()
         self.run_serial()
 
     def connect_flower_to_sensor(self, _, val):
         self.port = val
-        # self.scr.chosen_port = val
+        self.scr.chosen_port = val
         self.run_serial()
         self.my_manager.main_flower_list.write_list_to_file()
 
     def run_serial(self):
+        """
+        runs log file writer (data history) on port
+        """
         if (self.port.lower() != 'none') and (self.port != ''):
             print('serial >{}<'.format(self.port.lower()))
             self._f = MagicFileWriter(self.name)
@@ -87,27 +95,34 @@ class Flower:
                 self.scr.adj_mst.text, '\n')
 
     def add_button_to_main(self):
-        self.anchor = AnchorLayout(id='anchor', size_hint=(0.2, 0.2))
-        self.my_manager.main_screen.ids.stack.add_widget(self.anchor)
+        """
+        adds a button so that it is in Layout, otherwise it is in the 0,0
+        """
+        self.anchor = AnchorLayout(id='anchor', size_hint=(0.2, 0.2))  # anchor in the stack layout in main screen
+        self.my_manager.main_screen.ids.stack.add_widget(self.anchor)  # add anchor to manager.main_screen
+
         self.but = Button()
         self.but.bind(on_release=self.bind_screen_button)
         self.anchor.add_widget(self.but)
+
         box = BoxLayout(orientation='vertical')
         self.anchor.add_widget(box)
         box.add_widget(Label(text=self.name))
         self.small_label = Label(id='small_moisture', text='')
         box.add_widget(self.small_label)
+
         self.scr.ids.text_input.text = self.name
         self.scr.ids.text_input.readonly = True
         self.my_manager.add_widget(self.scr)
 
-    def delete_this_flower(self, ins, val):
+    def delete_this_flower(self, _, val):
         self.name = ''
         self.port = 'None'
         if self._f:
             self._f.remove()
         if self._listen:
             self._listen.remove()
+
         self.my_manager.current = 'Main Screen'
         self.my_manager.main_screen.ids.stack.remove_widget(self.anchor)
         self.my_manager.remove_widget(self.scr)
@@ -133,12 +148,12 @@ class FlowerManager:
 
     def __init__(self, my_manager):
         self.flower_list = []
-        self.my_mgr = my_manager
-        self.get_flower_list()
+        self.my_manager = my_manager  # creator of this object, normally a screen manager
+        self.get_flower_list()  # get list from ini file
 
     def add_flower(self, **kwargs):
         """ add flower to the list """
-        f = Flower(self.my_mgr, **kwargs)
+        f = Flower(self.my_manager, **kwargs)
         self.flower_list.append(f)
         self.write_list_to_file()
         return f
@@ -146,7 +161,6 @@ class FlowerManager:
     def remove_flower(self, fl):
         """ remove flower from the list
         :param fl: flower object
-        :return:  none
         """
         self.flower_list.remove(fl)
         del fl.but
@@ -162,7 +176,7 @@ class FlowerManager:
         try:
             with open(self.DATA, 'w') as f:
                 f.write(dumps(self.create_flower_list()))
-        except:
+        except FileNotFoundError:
             MagicError('cannot open file '+self.DATA)
 
     def get_flower_list(self):
@@ -170,7 +184,7 @@ class FlowerManager:
             with open(self.DATA) as f:
                 json_data = f.read()
             self.load_flowers(loads(json_data))
-        except:
+        except FileNotFoundError:
             self.flower_list = []
 
     def create_flower_list(self):
@@ -179,22 +193,3 @@ class FlowerManager:
     def load_flowers(self, data):
         x = [self.add_flower(name=i['name'], port=i['port']) for i in data]
         return x
-
-
-def populate_ports():
-    x = interface.list_serial_ports()
-    x.append('None')
-    return x
-
-
-def dump_kwargs(**kwargs):
-    _dict = {}
-    for i in kwargs:
-        _dict[i] = kwargs[i]
-    return _dict
-
-
-def get_dict_from_key(d, name):
-    _dict = d.get(name)
-    return _dict
-

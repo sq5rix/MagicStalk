@@ -36,6 +36,12 @@ def list_serial_ports():
     return result
 
 
+def populate_ports():
+    port_list = list_serial_ports()
+    port_list.append('None')
+    return port_list
+
+
 class SerialInterface:
     """ serial interface connect and read/write """
     def __init__(self, **kwargs):
