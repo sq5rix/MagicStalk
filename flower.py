@@ -10,14 +10,13 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
 from interface import populate_ports
 import os
-import datetime
 
 
 class FlowerScreen(Screen):
     """ screen with detailed flower data, connected, or small
     """
     delete_flower = BooleanProperty(False)  # simple flag to delete object
-    port_list = ListProperty('None')
+    port_list = ListProperty()
     chosen_port = StringProperty('None')
 
     cur_mst = ObjectProperty(None)
@@ -41,9 +40,6 @@ class Flower:
         self.name = kwargs['name']
         self.port = kwargs['port']
 
-        self._listen = None
-        self._f = None
-
         self.small_label = ObjectProperty(None)
         self.anchor = ObjectProperty(None)
         self.but = ObjectProperty(None)
@@ -55,44 +51,18 @@ class Flower:
         self.scr.bind(delete_flower=self.delete_this_flower)
 
         self.add_button_to_main()
-        self.run_serial()
+
+        self.communicator = AvrParser(self.name, self.port)
+        self.communicator.change_port(self.port)
 
     def connect_flower_to_sensor(self, _, val):
+        """ on event - change position in spinner - connect flower to sensor
+        :param _: ignore
+        :param val: port name
+        """
         self.port = val
-        self.scr.chosen_port = val
-        self.run_serial()
+        self.communicator.change_port(val)
         self.my_manager.main_flower_list.write_list_to_file()
-
-    def run_serial(self):
-        """
-        runs log file writer (data history) on port
-        """
-        if (self.port.lower() != 'none') and (self.port != ''):
-            print('serial >{}<'.format(self.port.lower()))
-            self._f = MagicFileWriter(self.name)
-            self._listen = AvrParser(name=self.name, port=self.port)
-            self._listen.bind(result=self.listener)  # result is ListProperty in Flower
-
-    def listener(self, _, val):
-        """ push data from serial port to flower display
-        :param _: ignored
-        :param val: value from sensor
-        :return: none
-        """
-        if val[0] == 'A':
-            self.scr.avg_mst.text = val[1]
-        elif val[0] == 'M':
-            self.scr.cur_mst.text = val[1]
-            self.small_label.text = val[1]
-        elif val[0] == 'T':
-            self.scr.cur_temp.text = val[1]
-        elif val[0] == 'C':
-            self.scr.adj_mst.text = val[1]
-            self._f.write_serial_line(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d, %H:%M, '))
-            self._f.write_serial_line(
-                self.scr.cur_temp.text, ', ',
-                self.scr.avg_mst.text, ', ',
-                self.scr.adj_mst.text, '\n')
 
     def add_button_to_main(self):
         """
@@ -118,10 +88,6 @@ class Flower:
     def delete_this_flower(self, _, val):
         self.name = ''
         self.port = 'None'
-        if self._f:
-            self._f.remove()
-        if self._listen:
-            self._listen.remove()
 
         self.my_manager.current = 'Main Screen'
         self.my_manager.main_screen.ids.stack.remove_widget(self.anchor)

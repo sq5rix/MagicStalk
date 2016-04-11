@@ -14,7 +14,7 @@ class MagicFileWriter:
             os.mkdir(d)
         try:
             self.f = open(self.filename, 'a')
-        except:
+        except FileNotFoundError:
             MagicError('cannot open file')
 
     def write_serial_line(self, *args):
@@ -25,7 +25,7 @@ class MagicFileWriter:
         if self.f.closed:
             try:
                 self.f = open(self.filename, 'a')
-            except:
+            except FileNotFoundError:
                 MagicError('cannot open file')
         for i in args:
             self.f.write(i)
