@@ -24,13 +24,14 @@ class SerialInterface(Parser):
     """ serial interface connect and read/write """
 
     BAUD_RATE = 38400
+    result = ListProperty()
 
-    def __init__(self, name, port, **kwargs):
+    def __init__(self, name, **kwargs):
 
         super(SerialInterface, self).__init__(**kwargs)
 
         self.name = name
-        self.port = port
+        self.port = ''
 
         self.magic_file_handle = None
         self.serial_port_handle = None
@@ -42,16 +43,20 @@ class SerialInterface(Parser):
         self.command = ''
 
     def read_char(self):
-        try:
-            c = str(self.serial_port_handle.read(), encoding='UTF-8')
-            return c
-        except serial.serialutil.SerialTimeoutException:
+        for _ in range(10):
             try:
-                self.serial_port_handle.close()
-                self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
-                return 'R'
-            except serial.serialutil.SerialException:
-                return 'X'
+                c = str(self.serial_port_handle.read(), encoding='ascii')
+                return c
+            except:
+                try:
+                    print('retry port...')
+                    self.serial_port_handle.close()
+                    self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
+                except:
+                    pass
+        else:
+            self.serial_port_handle.close()
+            self.port = 'None'
 
     def write_char(self, c):
         try:
@@ -61,11 +66,11 @@ class SerialInterface(Parser):
 
     def parse(self):
         """ parse event on change will send command and value - abstract, works with interface """
-        c = self.read_char()
+        c = ''
         while True:
             if c.isalpha():
                 self.command = c
-                num = '_'
+                num = ''
                 c = self.read_char()
                 while c.isdigit():
                     num += c
@@ -80,24 +85,22 @@ class SerialInterface(Parser):
                 c = self.read_char()
 
     def start_thread(self, name):
-        # try:
-        self._t = Thread(target=self.parse, name=name)
-        self._t.daemon = True
-        self._t.start()
-        self._stop = Event()
-        self._t.bind(result=self.listener)  # result is ListProperty
-        print('new thread name = ' + self._t.name)
-        # except Exception as e:
-        #     MagicError('Thread failed')
+        try:
+            self._t = Thread(target=self.parse, name=name)
+            self._t.daemon = True
+            self._t.start()
+            self._stop = Event()
+            self.magic_file_handle = MagicFileWriter(self.name)
+            print('new thread name = ' + self._t.name)
+        except Exception as e:
+            MagicError('Thread failed')
 
     def change_port(self, name):
         """         runs log file writer (data history) on port
         """
         self.port = name
         if (self.port.lower() != 'none') and (self.port != ''):
-            print('serial >{}<'.format(self.port.lower()))
             self.open_port()
-            self.magic_file_handle = MagicFileWriter(self.name)
             self.start_thread(self.name)
         else:
             self.close_port()
@@ -105,11 +108,12 @@ class SerialInterface(Parser):
                 self._t.remove()
 
     def write_data_to_parser_file(self, *args):
-        self.magic_file_handle.write_serial_line(self, *args)
+        self.magic_file_handle.write_serial_line(*args)
 
     def open_port(self):
         try:
             self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
+            self.serial_port_handle.flush()
         except serial.serialutil.SerialException:
             MagicError('Problem port: '+self.port)
         finally:
@@ -131,30 +135,29 @@ class SerialInterface(Parser):
 class AvrParser(SerialInterface):
     """ simple uart parser - format 'X9292992 ', where X - any letter, any number follows """
 
-    def listener(self, caller_instance, passed_value):
+    def __init__(self, name, screen_to_send_data, **kwargs):
+        super(AvrParser, self).__init__(name, **kwargs)
+        self.screen_to_send_data = screen_to_send_data
+
+    def listener(self, _, passed_value):
         """ push data from serial port to flower display
-        :param caller_instance: who called me? should be screen
         :param passed_value: what it passed?
         """
-        print('listener')
-        print(caller_instance)
-        print(passed_value)
         if passed_value[0] == 'A':
-            self.scr.avg_mst.text = passed_value[1]
+            self.screen_to_send_data.ids.avg_mst.text = passed_value[1]
         elif passed_value[0] == 'M':
-            caller_instance.ids.cur_mst.text = passed_value[1]
-            caller_instance.ids.small_label.text = passed_value[1]
+            self.screen_to_send_data.ids.cur_mst.text = passed_value[1]
         elif passed_value[0] == 'T':
-            caller_instance.ids.cur_temp.text = passed_value[1]
+            self.screen_to_send_data.ids.cur_temp.text = passed_value[1]
         elif passed_value[0] == 'C':
-            caller_instance.ids.adj_mst.text = passed_value[1]
+            self.screen_to_send_data.ids.adj_mst.text = passed_value[1]
             self.write_data_to_parser_file(
                 datetime.datetime.strftime(datetime.datetime.now(),
                                            '%Y-%m-%d, %H:%M, '))
             self.write_data_to_parser_file(
-                caller_instance.ids.cur_temp.text, ', ',
-                caller_instance.ids.avg_mst.text, ', ',
-                caller_instance.ids.adj_mst.text, '\n')
+                self.screen_to_send_data.ids.cur_temp.text, ', ',
+                self.screen_to_send_data.ids.avg_mst.text, ', ',
+                self.screen_to_send_data.ids.adj_mst.text, '\n')
 
 
 def populate_ports():

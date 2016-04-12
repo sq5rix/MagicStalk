@@ -33,8 +33,6 @@ class Flower:
     flower class to keep single sensor group and flower data
     """
 
-    result = ListProperty()  # put listener data here
-
     def __init__(self, my_manager, **kwargs):
 
         self.my_manager = my_manager
@@ -54,7 +52,7 @@ class Flower:
 
         self.add_button_to_main()
 
-        self.communicator = AvrParser(self.name, self.port)
+        self.communicator = AvrParser(self.name, self.scr)
         self.communicator.bind(result=self.communicator.listener)  # result is ListProperty
         self.communicator.change_port(self.port)
 
@@ -81,7 +79,7 @@ class Flower:
         box = BoxLayout(orientation='vertical')
         self.anchor.add_widget(box)
         box.add_widget(Label(text=self.name))
-        self.small_label = Label(id='small_moisture', text='')
+        self.small_label = Label(id='small_moisture', text=self.scr.ids.cur_mst.text)
         box.add_widget(self.small_label)
 
         self.scr.ids.text_input.text = self.name
