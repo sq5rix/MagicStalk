@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import sys
 import glob
 import serial
@@ -14,52 +16,8 @@ from magicerror import MagicError
 class Parser(EventDispatcher):
     """ simple abstract parser - format 'X9292992 ', where X - any letter, any number follows """
 
-    result = ListProperty()  # put listener data here
-
     def __init__(self):
-
         super(Parser, self).__init__()
-
-        self._t = None
-        self.val = ''
-        self.command = ''
-        self._stop = None
-
-    def start_thread(self, name):
-        try:
-            self._t = Thread(target=self.parse, name=name)
-            self._t.daemon = True
-            self._t.start()
-            self._stop = Event()
-            print('new thread name = ' + self._t.name)
-        except Exception as e:
-            MagicError('Thread failed')
-        finally:
-            self.val = ''
-            self.command = ''
-
-    def parse(self):
-        """ parse event on change will send command and value - abstract, works with interface """
-        c = ''
-        while True:
-            if c.isalpha():
-                self.command = c
-                num = ''
-                c = self.read_char()
-                while c.isdigit():
-                    num += c
-                    c = self.read_char()
-                if num.__sizeof__() > 0:
-                    self.val = num
-                    self.result = [self.command, self.val]
-                    print(self.result)
-                else:
-                    pass
-            else:
-                c = self.read_char()
-
-    def remove(self):
-        self._stop.set()
 
 
 class SerialInterface(Parser):
@@ -74,9 +32,14 @@ class SerialInterface(Parser):
         self.name = name
         self.port = port
 
-        self._listen = None
         self.magic_file_handle = None
         self.serial_port_handle = None
+
+        self._t = None
+        self._stop = None
+
+        self.val = ''
+        self.command = ''
 
     def read_char(self):
         try:
@@ -96,20 +59,50 @@ class SerialInterface(Parser):
         except serial.serialutil.SerialException:
             MagicError('cannot write to port: '+self.port)
 
+    def parse(self):
+        """ parse event on change will send command and value - abstract, works with interface """
+        c = self.read_char()
+        while True:
+            if c.isalpha():
+                self.command = c
+                num = '_'
+                c = self.read_char()
+                while c.isdigit():
+                    num += c
+                    c = self.read_char()
+                if num.__sizeof__() > 0:
+                    self.val = num
+                    self.result = [self.command, self.val]
+                    print(self.result)
+                else:
+                    pass
+            else:
+                c = self.read_char()
+
+    def start_thread(self, name):
+        # try:
+        self._t = Thread(target=self.parse, name=name)
+        self._t.daemon = True
+        self._t.start()
+        self._stop = Event()
+        self._t.bind(result=self.listener)  # result is ListProperty
+        print('new thread name = ' + self._t.name)
+        # except Exception as e:
+        #     MagicError('Thread failed')
+
     def change_port(self, name):
         """         runs log file writer (data history) on port
         """
         self.port = name
         if (self.port.lower() != 'none') and (self.port != ''):
             print('serial >{}<'.format(self.port.lower()))
+            self.open_port()
             self.magic_file_handle = MagicFileWriter(self.name)
-            self._listen = Parser()
-            self._listen.start_thread(self.name)
-            self._listen.bind(result=self.listener)  # result is ListProperty
+            self.start_thread(self.name)
         else:
             self.close_port()
-            if self._listen:
-                self._listen.remove()
+            if self._t:
+                self._t.remove()
 
     def write_data_to_parser_file(self, *args):
         self.magic_file_handle.write_serial_line(self, *args)
@@ -130,6 +123,9 @@ class SerialInterface(Parser):
             pass
         finally:
             self.port = 'None'
+
+    def remove(self):
+        self._stop.set()
 
 
 class AvrParser(SerialInterface):

@@ -1,5 +1,4 @@
 from interface import AvrParser
-from magicfiles import MagicFileWriter
 from magicerror import MagicError
 from json import dumps, loads
 from kivy.properties import ObjectProperty, ListProperty, StringProperty, BooleanProperty
@@ -33,6 +32,9 @@ class Flower:
     """
     flower class to keep single sensor group and flower data
     """
+
+    result = ListProperty()  # put listener data here
+
     def __init__(self, my_manager, **kwargs):
 
         self.my_manager = my_manager
@@ -53,6 +55,7 @@ class Flower:
         self.add_button_to_main()
 
         self.communicator = AvrParser(self.name, self.port)
+        self.communicator.bind(result=self.communicator.listener)  # result is ListProperty
         self.communicator.change_port(self.port)
 
     def connect_flower_to_sensor(self, _, val):
