@@ -54,9 +54,6 @@ class SerialInterface(Parser):
                     self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
                 except:
                     self.serial_port_handle.close()
-        else:
-            self.serial_port_handle.close()
-            self.port = 'None'
 
     def write_char(self, c):
         try:
@@ -96,7 +93,8 @@ class SerialInterface(Parser):
             MagicError('Thread failed')
 
     def change_port(self, name):
-        """         runs log file writer (data history) on port
+        """ change communication port and start its thread
+        :param name: port name
         """
         self.port = name
         if (self.port.lower() != 'none') and (self.port != ''):
@@ -116,8 +114,6 @@ class SerialInterface(Parser):
             self.serial_port_handle.flush()
         except serial.serialutil.SerialException:
             MagicError('Problem port: '+self.port)
-        finally:
-            self.port = 'None'
 
     def close_port(self):
         try:
