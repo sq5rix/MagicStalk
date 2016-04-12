@@ -24,11 +24,11 @@ class SerialInterface(Parser):
     """ serial interface connect and read/write """
 
     BAUD_RATE = 38400
-    result = ListProperty()
+    result = ListProperty([])
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name):
 
-        super(SerialInterface, self).__init__(**kwargs)
+        super(SerialInterface, self).__init__()
 
         self.name = name
         self.port = ''
@@ -53,7 +53,7 @@ class SerialInterface(Parser):
                     self.serial_port_handle.close()
                     self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
                 except:
-                    pass
+                    self.serial_port_handle.close()
         else:
             self.serial_port_handle.close()
             self.port = 'None'
@@ -135,29 +135,32 @@ class SerialInterface(Parser):
 class AvrParser(SerialInterface):
     """ simple uart parser - format 'X9292992 ', where X - any letter, any number follows """
 
-    def __init__(self, name, screen_to_send_data, **kwargs):
-        super(AvrParser, self).__init__(name, **kwargs)
-        self.screen_to_send_data = screen_to_send_data
+    passed_value = ListProperty([])
 
-    def listener(self, _, passed_value):
+    def __init__(self, name):
+        super(AvrParser, self).__init__(name)
+        self.passed_value = ['', '', '', '']
+
+    def listener(self, _, val):
         """ push data from serial port to flower display
-        :param passed_value: what it passed?
+        :param val: what it passed?
         """
-        if passed_value[0] == 'A':
-            self.screen_to_send_data.ids.avg_mst.text = passed_value[1]
-        elif passed_value[0] == 'M':
-            self.screen_to_send_data.ids.cur_mst.text = passed_value[1]
-        elif passed_value[0] == 'T':
-            self.screen_to_send_data.ids.cur_temp.text = passed_value[1]
-        elif passed_value[0] == 'C':
-            self.screen_to_send_data.ids.adj_mst.text = passed_value[1]
+        if val[0] == 'M':
+            self.passed_value[0] = str(val[1])
+        elif val[0] == 'T':
+            self.passed_value[1] = str(val[1])
+        elif val[0] == 'A':
+            self.passed_value[2] = str(val[1])
+        elif val[0] == 'C':
+            self.passed_value[3] = str(val[1])
             self.write_data_to_parser_file(
-                datetime.datetime.strftime(datetime.datetime.now(),
-                                           '%Y-%m-%d, %H:%M, '))
+                datetime.datetime.strftime(
+                    datetime.datetime.now(),
+                    '%Y-%m-%d, %H:%M, '))
             self.write_data_to_parser_file(
-                self.screen_to_send_data.ids.cur_temp.text, ', ',
-                self.screen_to_send_data.ids.avg_mst.text, ', ',
-                self.screen_to_send_data.ids.adj_mst.text, '\n')
+                self.passed_value[1], ', ',
+                self.passed_value[2], ', ',
+                self.passed_value[3], '\n')
 
 
 def populate_ports():

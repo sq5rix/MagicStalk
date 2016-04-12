@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty
-from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
+from kivy.uix.screenmanager import ScreenManager, WipeTransition
 from flower import FlowerManager
 
 

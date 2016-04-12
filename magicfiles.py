@@ -22,15 +22,12 @@ class MagicFileWriter:
         :param args: *args - any number of strings, will write with , at the end
         :return: none
         """
-        if self.f.closed():
-            try:
-                self.f = open(self.filename, 'a')
-            except FileNotFoundError:
-                MagicError('cannot open file')
+        try:
+            self.f = open(self.filename, 'a')
+        except:
+            pass
         for i in args:
             self.f.write(i)
         self.f.flush()
 
-    def remove(self):
-            self.f.close()
 

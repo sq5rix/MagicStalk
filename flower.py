@@ -1,14 +1,17 @@
-from interface import AvrParser
 from magicerror import MagicError
 from json import dumps, loads
+import os
+
 from kivy.properties import ObjectProperty, ListProperty, StringProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
+from kivy.event import EventDispatcher
 from interface import populate_ports
-import os
+
+from interface import AvrParser
 
 
 class FlowerScreen(Screen):
@@ -28,17 +31,18 @@ class FlowerScreen(Screen):
         super(FlowerScreen, self).__init__(**kwargs)
 
 
-class Flower:
+class Flower(EventDispatcher):
     """
     flower class to keep single sensor group and flower data
     """
+    def __init__(self, my_manager, name, port):
 
-    def __init__(self, my_manager, **kwargs):
+        super(Flower, self).__init__()
 
         self.my_manager = my_manager
 
-        self.name = kwargs['name']
-        self.port = kwargs['port']
+        self.name = name
+        self.port = port
 
         self.small_label = ObjectProperty(None)
         self.anchor = ObjectProperty(None)
@@ -49,11 +53,11 @@ class Flower:
 
         self.scr.bind(chosen_port=self.connect_flower_to_sensor)
         self.scr.bind(delete_flower=self.delete_this_flower)
-
         self.add_button_to_main()
 
-        self.communicator = AvrParser(self.name, self.scr)
-        self.communicator.bind(result=self.communicator.listener)  # result is ListProperty
+        self.communicator = AvrParser(self.name)
+        self.communicator.bind(result=self.communicator.listener)  # result from serial is ListProperty[command, val]
+        self.communicator.bind(passed_value=self.on_passed_value)  # result from parser is ListProperty[M, T, A, C]
         self.communicator.change_port(self.port)
 
     def connect_flower_to_sensor(self, _, val):
@@ -64,6 +68,12 @@ class Flower:
         self.port = val
         self.communicator.change_port(val)
         self.my_manager.main_flower_list.write_list_to_file()
+
+    def on_passed_value(self, _, val):
+        self.scr.ids.cur_mst.text = self.small_label.text = val[0]
+        self.scr.ids.cur_temp.text = val[1]
+        self.scr.ids.avg_mst.text = val[2]
+        self.scr.ids.adj_mst.text = val[3]
 
     def add_button_to_main(self):
         """
@@ -87,6 +97,7 @@ class Flower:
         self.my_manager.add_widget(self.scr)
 
     def delete_this_flower(self, _, val):
+
         self.name = ''
         self.port = 'None'
 

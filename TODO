@@ -1,7 +1,4 @@
-#save/retrieve status, all flowers
-
-on spinner - run parser - in Flower class parser not in __init__
-if port is None dont start thread, dont create file
+improve serial port management - port should show after insertion
 
 check on the name, if is not taken
 
