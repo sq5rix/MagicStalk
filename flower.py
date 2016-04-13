@@ -43,12 +43,9 @@ class Flower(FlowerScreen):
         self.name = name
         self.port = port
 
-        print(self.name, ' ', self.port)
         self.small_label = ObjectProperty(None)
         self.anchor = ObjectProperty(None)
         self.but = ObjectProperty(None)
-        self.ids.text_input.text = ''
-        self.ids.text_input.text_hint = ''
 
         if self.port == '':
             self.port = 'None'
@@ -101,10 +98,9 @@ class Flower(FlowerScreen):
         self.my_manager.add_widget(self)
 
     def delete_this_flower(self, _, val):
-
+        print('delete_this_flower: ', self.name)
         self.name = ''
         self.port = 'None'
-
         self.my_manager.main_screen.ids.stack.remove_widget(self.anchor)
         self.my_manager.remove_widget(self)
         self.my_manager.main_flower_list.remove_flower(self)
