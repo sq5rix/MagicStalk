@@ -32,7 +32,9 @@
                 size_hint_x: 0.2
                 size_hint_y: 0.2
                 text: '+'
-                on_release: root.manager.current='Flower Screen'
+                on_release:
+                    root.manager.flower_screen.ids.text_input.text = ''
+                    root.manager.current='Flower Screen'
 
 <FlowerScreen>:
 
