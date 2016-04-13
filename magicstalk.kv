@@ -40,7 +40,6 @@
     avg_mst:  avg_mst
     cur_temp: cur_temp
     adj_mst:  adj_mst
-
     usb_port: usb_port
 
     AnchorLayout:
@@ -56,8 +55,9 @@
                 id: text_input
                 font_size: self.height * 0.6
                 multiline: False
+                text: ''
+                text_hint: ''
                 focus: True
-
 
     AnchorLayout:
         anchor_x: 'right'
@@ -66,7 +66,6 @@
             text: 'OK'
             size_hint: 0.18, 0.12
             on_release:
-                # root.chosen_port = root.manager.flower_screen.ids.usb_port.text
                 root.manager.flower_name=root.manager.flower_screen.ids.text_input.text
                 root.manager.current='Main Screen'
 

@@ -8,7 +8,6 @@ from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
-from kivy.event import EventDispatcher
 from interface import populate_ports
 
 from interface import AvrParser
@@ -17,21 +16,22 @@ from interface import AvrParser
 class FlowerScreen(Screen):
     """ screen with detailed flower data, connected, or small
     """
-    delete_flower = BooleanProperty(False)  # simple flag to delete object
     port_list = ListProperty()
-    chosen_port = StringProperty('None')
-
-    cur_mst = ObjectProperty(None)
-    cur_temp = ObjectProperty(None)
-    adj_mst = ObjectProperty(None)
-    avg_mst = ObjectProperty(None)
+    chosen_port = StringProperty()
+    delete_flower = BooleanProperty(False)  # simple flag to delete object
 
     def __init__(self, **kwargs):
+
+        self.cur_mst = ObjectProperty(None)
+        self.cur_temp = ObjectProperty(None)
+        self.adj_mst = ObjectProperty(None)
+        self.avg_mst = ObjectProperty(None)
+
         self.port_list = populate_ports()
         super(FlowerScreen, self).__init__(**kwargs)
 
 
-class Flower(EventDispatcher):
+class Flower(FlowerScreen):
     """
     flower class to keep single sensor group and flower data
     """
@@ -40,19 +40,22 @@ class Flower(EventDispatcher):
         super(Flower, self).__init__()
 
         self.my_manager = my_manager
-
         self.name = name
         self.port = port
 
+        print(self.name, ' ', self.port)
         self.small_label = ObjectProperty(None)
         self.anchor = ObjectProperty(None)
         self.but = ObjectProperty(None)
+        self.ids.text_input.text = ''
+        self.ids.text_input.text_hint = ''
 
-        self.scr = FlowerScreen(name=self.name)
-        self.scr.ids.usb_port.text = self.port
-
-        self.scr.bind(chosen_port=self.connect_flower_to_sensor)
-        self.scr.bind(delete_flower=self.delete_this_flower)
+        if self.port == '':
+            self.port = 'None'
+        self.chosen_port = self.port
+        self.ids.usb_port.text = self.chosen_port
+        self.bind(chosen_port=self.connect_flower_to_sensor)
+        self.bind(delete_flower=self.delete_this_flower)
         self.add_button_to_main()
 
         self.communicator = AvrParser(self.name)
@@ -70,10 +73,10 @@ class Flower(EventDispatcher):
         self.my_manager.main_flower_list.write_list_to_file()
 
     def on_passed_value(self, _, val):
-        self.scr.ids.cur_mst.text = self.small_label.text = val[0]
-        self.scr.ids.cur_temp.text = val[1]
-        self.scr.ids.avg_mst.text = val[2]
-        self.scr.ids.adj_mst.text = val[3]
+        self.ids.cur_mst.text = self.small_label.text = val[0]
+        self.ids.cur_temp.text = val[1]
+        self.ids.avg_mst.text = val[2]
+        self.ids.adj_mst.text = val[3]
 
     def add_button_to_main(self):
         """
@@ -89,22 +92,23 @@ class Flower(EventDispatcher):
         box = BoxLayout(orientation='vertical')
         self.anchor.add_widget(box)
         box.add_widget(Label(text=self.name))
-        self.small_label = Label(id='small_moisture', text=self.scr.ids.cur_mst.text)
+        self.small_label = Label(id='small_moisture', text=self.ids.cur_mst.text)
         box.add_widget(self.small_label)
 
-        self.scr.ids.text_input.text = self.name
-        self.scr.ids.text_input.readonly = True
-        self.my_manager.add_widget(self.scr)
+        self.ids.text_input.text = self.name
+        self.ids.usb_port.text = self.chosen_port
+        self.ids.text_input.readonly = True
+        self.my_manager.add_widget(self)
 
     def delete_this_flower(self, _, val):
 
         self.name = ''
         self.port = 'None'
 
-        self.my_manager.current = 'Main Screen'
         self.my_manager.main_screen.ids.stack.remove_widget(self.anchor)
-        self.my_manager.remove_widget(self.scr)
+        self.my_manager.remove_widget(self)
         self.my_manager.main_flower_list.remove_flower(self)
+        self.my_manager.current = 'Main Screen'
 
     def bind_screen_button(self, _):
         self.my_manager.current = self.name

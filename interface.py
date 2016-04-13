@@ -24,7 +24,7 @@ class SerialInterface(Parser):
     """ serial interface connect and read/write """
 
     BAUD_RATE = 38400
-    result = ListProperty([])
+    result = ListProperty()
 
     def __init__(self, name):
 
@@ -32,6 +32,7 @@ class SerialInterface(Parser):
 
         self.name = name
         self.port = ''
+        self.port_ok = False
 
         self.magic_file_handle = None
         self.serial_port_handle = None
@@ -43,17 +44,23 @@ class SerialInterface(Parser):
         self.command = ''
 
     def read_char(self):
+        if not self.port_ok:
+            return ' '
         for _ in range(10):
             try:
                 c = str(self.serial_port_handle.read(), encoding='ascii')
+                self.port_ok = True
                 return c
             except:
                 try:
-                    print('retry port...')
+                    print('retry port... ', self.port)
                     self.serial_port_handle.close()
                     self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
+                    self.serial_port_handle.flush()
+                    self.port_ok = True
                 except:
                     self.serial_port_handle.close()
+                    self.port_ok = False
 
     def write_char(self, c):
         try:
@@ -63,6 +70,8 @@ class SerialInterface(Parser):
 
     def parse(self):
         """ parse event on change will send command and value - abstract, works with interface """
+        if not self.port_ok:
+            return
         c = ''
         while True:
             if c.isalpha():
@@ -96,24 +105,28 @@ class SerialInterface(Parser):
         """ change communication port and start its thread
         :param name: port name
         """
-        self.port = name
-        if (self.port.lower() != 'none') and (self.port != ''):
-            self.open_port()
-            self.start_thread(self.name)
-        else:
-            self.close_port()
-            if self._t:
-                self._t.remove()
+        if self.check_port():
+            self.port = name
+            if self.check_port():
+                self.open_port()
+                self.start_thread(self.name)
+            else:
+                self.close_port()
+                if self._t:
+                    self.remove()
 
     def write_data_to_parser_file(self, *args):
         self.magic_file_handle.write_serial_line(*args)
 
     def open_port(self):
-        try:
-            self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
-            self.serial_port_handle.flush()
-        except serial.serialutil.SerialException:
-            MagicError('Problem port: '+self.port)
+        if self.check_port():
+            try:
+                self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
+                self.serial_port_handle.flush()
+                self.port_ok = True
+            except serial.serialutil.SerialException:
+                self.port_ok = False
+                MagicError('Problem port: '+self.port)
 
     def close_port(self):
         try:
@@ -123,9 +136,13 @@ class SerialInterface(Parser):
             pass
         finally:
             self.port = 'None'
+            self.port_ok = False
 
     def remove(self):
         self._stop.set()
+
+    def check_port(self):
+        return self.port != 'None'
 
 
 class AvrParser(SerialInterface):
