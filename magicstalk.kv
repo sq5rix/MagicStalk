@@ -48,7 +48,7 @@
         anchor_x: 'left'
         anchor_y: 'top'
         StackLayout:
-            size_hint_x: 0.4
+            size_hint_x: 0.35
             size_hint_y: 0.1
             orientation: 'lr-tb'
             Label:
@@ -58,8 +58,11 @@
                 font_size: self.height * 0.6
                 multiline: False
                 text: ''
-                text_hint: ''
                 focus: True
+            Button:
+                text: 'Choose Image'
+                on_release:
+                    root.manager.current='Choose Image'
 
     AnchorLayout:
         anchor_x: 'right'
@@ -130,6 +133,14 @@
                 on_text:
                     root.chosen_port = self.text
 
+<ImageFileScreen@Screen>:
+    id: img_scr
+    FileChooserIconView:
+        id: fc
+        path: '~'
+        filter: ['*.png']
+
+
 <Manager>:
     id: screen_manager
 
@@ -146,4 +157,8 @@
         name: "Flower Screen"
         manager: screen_manager
 
+    ImageFileScreen:
+        id: img_scr
+        name: "Choose Image"
+        manager: screen_manager
 
