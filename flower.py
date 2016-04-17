@@ -8,8 +8,10 @@ from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
-from interface import populate_ports
+from kivy.graphics import *
+from kivy.uix.widget import Widget
 
+from interface import populate_ports
 from interface import AvrParser
 
 
@@ -29,6 +31,21 @@ class FlowerScreen(Screen):
 
         self.port_list = populate_ports()
         super(FlowerScreen, self).__init__(**kwargs)
+
+
+class GraphWindow(Widget):
+    def __init__(self, **kwargs):
+        super(GraphWindow, self).__init__(**kwargs)
+        with self.canvas:
+            Color(0.08, 0.4, 0.08, .6, mode='rgba')
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+
+        self.bind(pos=self.update_rect)
+        self.bind(size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
 
 
 class Flower(FlowerScreen):
@@ -59,6 +76,7 @@ class Flower(FlowerScreen):
         self.communicator.bind(result=self.communicator.listener)  # result from serial is ListProperty[command, val]
         self.communicator.bind(passed_value=self.on_passed_value)  # result from parser is ListProperty[M, T, A, C]
         self.communicator.change_port(self.port)
+        self.graph = GraphWindow()
 
     def connect_flower_to_sensor(self, _, val):
         """ on event - change position in spinner - connect flower to sensor

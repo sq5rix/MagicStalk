@@ -36,13 +36,10 @@
                     root.manager.flower_screen.ids.text_input.text = ''
                     root.manager.current='Flower Screen'
 
-
-<GraphWindow@Widget>:
-    canvas.after:
-        Line:
-            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
-            dash_offset: 5
-            dash_length: 3
+<GraphWindow>:
+    canvas:
+#        Line:
+#            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
 
 <FlowerScreen>:
 
@@ -51,6 +48,7 @@
     cur_temp: cur_temp
     adj_mst:  adj_mst
     usb_port: usb_port
+    graph_drawing: graph_drawing
 
     AnchorLayout:
         anchor_x: 'left'
@@ -72,7 +70,8 @@
                 on_release:
                     root.manager.current='Choose Image'
             GraphWindow:
-                size_hint_y: 6
+                id: graph_drawing
+                size_hint_y: 5.5
 
 
 
