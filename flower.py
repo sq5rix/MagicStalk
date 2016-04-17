@@ -36,9 +36,14 @@ class FlowerScreen(Screen):
 class GraphWindow(Widget):
     def __init__(self, **kwargs):
         super(GraphWindow, self).__init__(**kwargs)
+
+        #self.name = kwargs['name']
+
         with self.canvas:
-            Color(0.08, 0.4, 0.08, .6, mode='rgba')
+            Color(0.08, 0.4, 0.08, .3, mode='rgba')
             self.rect = Rectangle(pos=self.pos, size=self.size)
+            Color(1, 1, 1, 1)
+            #Line(points=get_moisture_from_file(name))
 
         self.bind(pos=self.update_rect)
         self.bind(size=self.update_rect)
@@ -72,11 +77,12 @@ class Flower(FlowerScreen):
         self.bind(delete_flower=self.delete_this_flower)
         self.add_button_to_main()
 
+        self.graph = GraphWindow()
+
         self.communicator = AvrParser(self.name)
         self.communicator.bind(result=self.communicator.listener)  # result from serial is ListProperty[command, val]
         self.communicator.bind(passed_value=self.on_passed_value)  # result from parser is ListProperty[M, T, A, C]
         self.communicator.change_port(self.port)
-        self.graph = GraphWindow()
 
     def connect_flower_to_sensor(self, _, val):
         """ on event - change position in spinner - connect flower to sensor
