@@ -35,46 +35,48 @@ class FlowerScreen(Screen):
 
 
 class GraphWindow(Widget):
+
+    grid_points = ListProperty([])
+
     def __init__(self, **kwargs):
         super(GraphWindow, self).__init__(**kwargs)
         self.last_hour = '00'
         self.name = 'orchid'
-
+        self.line_elem = []
+        self.time_elem = []
+        l = []
         with self.canvas:
-            Color(0.08, 0.4, 0.08, .3, mode='rgba')
-            self.rect = Rectangle(pos=self.pos, size=self.size)
-            Color(1, 1, 1, 1)
-            Line(points=self.get_moisture_from_file())
-
-        self.bind(pos=self.update_rect)
-        self.bind(size=self.update_rect)
-
-    def update_rect(self, *args):
-        self.rect.pos = self.pos
-        self.rect.size = self.size
+            for i in range(10):
+                l += [self.pos[0]+1, int(self.pos[1]+i*self.size[1]/10),
+                      self.width+1, int(self.pos[1]+i*self.size[1]/10)]
+            self.grid_points = l
 
     @staticmethod
     def in_hour(time):
         return time.partition(':')[0]
 
-    def get_moisture_from_file(self, ):
+    def get_moisture_from_file(self):
         # date, time, temp, moist, corr_moist
+        # self.x, self.y, self.width, self.height
         mp = []
+        self.line_elem = []
+        self.time_elem = []
         with open('log/{}.csv'.format(self.name), 'r') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
                 mp += ([row[i].strip() for i in range(4)])
-        elem = []
-        e = index = 0
+        e = index = day = 0
         while e < len(mp)-4:
             x = [mp[e+i] for i in range(4)]
             hour = self.in_hour(x[1])
             if (hour > self.last_hour) or (hour == '00'):
-                elem += [self.pos[0]+index, self.pos[1]+int(self.size[1]*int(x[3])/100)-300]
+                if hour == '00':
+                    day += 1
+                self.line_elem += [self.pos[0]+index, self.pos[1]+self.height*int(x[3])/1000]
+                self.time_elem += [day, hour]
                 self.last_hour = hour
                 index += 1
             e += 4
-        return elem
 
 
 class Flower(FlowerScreen):
