@@ -36,20 +36,25 @@ class FlowerScreen(Screen):
 
 class GraphWindow(Widget):
 
-    grid_points = ListProperty([])
-
     def __init__(self, **kwargs):
         super(GraphWindow, self).__init__(**kwargs)
         self.last_hour = '00'
-        self.name = 'orchid'
         self.line_elem = []
         self.time_elem = []
-        l = []
+
+        self.bind(pos=self.update_lines)
+        self.bind(size=self.update_lines)
+
+    def update_lines(self, *args):
+        self.canvas.clear()
         with self.canvas:
+            Color(0.3, 0.1, 0.8)
             for i in range(10):
-                l += [self.pos[0]+1, int(self.pos[1]+i*self.size[1]/10),
-                      self.width+1, int(self.pos[1]+i*self.size[1]/10)]
-            self.grid_points = l
+                l1 = self.pos[0]
+                l2 = self.pos[1]+int(self.height*i/10)
+                l3 = self.pos[0]+self.width
+                l4 = self.pos[1]+int(self.height*i/10)
+                Line(points=[l1, l2, l3, l4], width=1)
 
     @staticmethod
     def in_hour(time):
@@ -85,11 +90,11 @@ class Flower(FlowerScreen):
     """
     def __init__(self, my_manager, name, port):
 
-        super(Flower, self).__init__()
-
         self.my_manager = my_manager
         self.name = name
         self.port = port
+
+        super(Flower, self).__init__()
 
         self.small_label = ObjectProperty(None)
         self.anchor = ObjectProperty(None)
@@ -101,9 +106,8 @@ class Flower(FlowerScreen):
         self.ids.usb_port.text = self.chosen_port
         self.bind(chosen_port=self.connect_flower_to_sensor)
         self.bind(delete_flower=self.delete_this_flower)
-        self.add_button_to_main()
 
-        self.graph_window = GraphWindow()
+        self.add_button_to_main()
 
         self.communicator = AvrParser(self.name)
         self.communicator.bind(result=self.communicator.listener)  # result from serial is ListProperty[command, val]

@@ -36,11 +36,6 @@
                     root.manager.flower_screen.ids.text_input.text = ''
                     root.manager.current='Flower Screen'
 
-<GraphWindow>:
-    canvas:
-#        Line:
-#            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
-
 <FlowerScreen>:
 
     cur_mst:  cur_mst
@@ -48,12 +43,12 @@
     cur_temp: cur_temp
     adj_mst:  adj_mst
     usb_port: usb_port
-    graph_drawing: graph_drawing
 
     AnchorLayout:
         anchor_x: 'left'
         anchor_y: 'top'
         StackLayout:
+            id: stack
             size_hint_x: 0.5
             size_hint_y: 0.1
             orientation: 'lr-tb'
@@ -70,8 +65,6 @@
                 on_release:
                     root.manager.current='Choose Image'
             GraphWindow:
-                id: graph_drawing
-                grid_points: grid_points
                 size_hint_y: 5.5
                 canvas:
                     Color:
@@ -80,14 +73,7 @@
                         pos: self.pos
                         size: self.size
                     Color:
-                        rgba: 0.5, 0.06, 0.14, .8
-                    Line:
-                        points: grid_points
-#                   Line:
-#                       points: self.line_elem
-#                       width: 1
-
-
+                        rgba: 1, 1, 1, 1
 
     AnchorLayout:
         anchor_x: 'right'
