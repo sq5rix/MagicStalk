@@ -11,7 +11,6 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
 from kivy.graphics import *
 from kivy.uix.widget import Widget
-from kivy.clock import Clock
 
 from interface import populate_ports
 from interface import AvrParser
@@ -39,33 +38,44 @@ class FlowerScreen(Screen):
 class GraphWindow(Widget):
 
     graph_name = StringProperty()
+    new_avg_mst = StringProperty()
 
     def __init__(self, **kwargs):
         super(GraphWindow, self).__init__(**kwargs)
         self.last_hour = '00'
         self.line_elem = []
         self.time_elem = []
+        self.line_scaled = []
 
         self.bind(pos=self.update_lines)
         self.bind(size=self.update_lines)
 
-        # Clock.schedule_once(self.late_init, 3)
-
     def on_graph_name(self, _, val):
         self.get_moisture_from_file(val)
+
+    def on_new_avg_mst(self, _, val):
+        self.get_moisture_from_file(self.graph_name)
 
     def update_lines(self, *args):
         self.canvas.clear()
         with self.canvas:
             Color(0.3, 0.4, 0.1, 0.3)
-            for i in range(10):
+            for i in range(9):
                 l1 = self.pos[0]
-                l2 = self.pos[1]+int(self.height*i/10)
+                l2 = self.pos[1]+int(self.height*i/8)
                 l3 = self.pos[0]+self.width
-                l4 = self.pos[1]+int(self.height*i/10)
+                l4 = self.pos[1]+int(self.height*i/8)
                 Line(points=[l1, l2, l3, l4], width=1)
             Color(0.2, 0.5, 0.1, 0.7)
-            Line(points=self.line_elem)
+            max_l = 700
+            min_l = 400
+            i = 0
+            self.line_scaled = []
+            while i in range(len(self.line_elem)-2):
+                self.line_scaled.append(self.pos[0]+self.line_elem[i])
+                self.line_scaled.append(self.pos[1]+self.height*(self.line_elem[i+1]-min_l)/(max_l-min_l))
+                i += 2
+            Line(points=self.line_scaled)
 
     @staticmethod
     def in_hour(time):
@@ -88,7 +98,7 @@ class GraphWindow(Widget):
             if (hour > self.last_hour) or (hour == '00'):
                 if hour == '00':
                     day += 1
-                self.line_elem += [self.pos[0]+index, self.pos[1]+self.height*(int(x[3])-300)/100]
+                self.line_elem += [index, int(x[3])]
                 self.time_elem += [day, hour]
                 self.last_hour = hour
                 index += 1
