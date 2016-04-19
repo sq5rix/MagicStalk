@@ -11,6 +11,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
 from kivy.graphics import *
 from kivy.uix.widget import Widget
+from kivy.clock import Clock
 
 from interface import populate_ports
 from interface import AvrParser
@@ -21,6 +22,7 @@ class FlowerScreen(Screen):
     """
     port_list = ListProperty()
     chosen_port = StringProperty()
+    flower_name = StringProperty()
     delete_flower = BooleanProperty(False)  # simple flag to delete object
 
     def __init__(self, **kwargs):
@@ -36,6 +38,8 @@ class FlowerScreen(Screen):
 
 class GraphWindow(Widget):
 
+    graph_name = StringProperty()
+
     def __init__(self, **kwargs):
         super(GraphWindow, self).__init__(**kwargs)
         self.last_hour = '00'
@@ -45,28 +49,35 @@ class GraphWindow(Widget):
         self.bind(pos=self.update_lines)
         self.bind(size=self.update_lines)
 
+        # Clock.schedule_once(self.late_init, 3)
+
+    def on_graph_name(self, _, val):
+        self.get_moisture_from_file(val)
+
     def update_lines(self, *args):
         self.canvas.clear()
         with self.canvas:
-            Color(0.3, 0.1, 0.8)
+            Color(0.3, 0.4, 0.1, 0.3)
             for i in range(10):
                 l1 = self.pos[0]
                 l2 = self.pos[1]+int(self.height*i/10)
                 l3 = self.pos[0]+self.width
                 l4 = self.pos[1]+int(self.height*i/10)
                 Line(points=[l1, l2, l3, l4], width=1)
+            Color(0.2, 0.5, 0.1, 0.7)
+            Line(points=self.line_elem)
 
     @staticmethod
     def in_hour(time):
         return time.partition(':')[0]
 
-    def get_moisture_from_file(self):
+    def get_moisture_from_file(self, name):
         # date, time, temp, moist, corr_moist
         # self.x, self.y, self.width, self.height
         mp = []
         self.line_elem = []
         self.time_elem = []
-        with open('log/{}.csv'.format(self.name), 'r') as csv_file:
+        with open('log/{}.csv'.format(name), 'r') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
                 mp += ([row[i].strip() for i in range(4)])
@@ -77,7 +88,7 @@ class GraphWindow(Widget):
             if (hour > self.last_hour) or (hour == '00'):
                 if hour == '00':
                     day += 1
-                self.line_elem += [self.pos[0]+index, self.pos[1]+self.height*int(x[3])/1000]
+                self.line_elem += [self.pos[0]+index, self.pos[1]+self.height*(int(x[3])-300)/100]
                 self.time_elem += [day, hour]
                 self.last_hour = hour
                 index += 1
@@ -93,6 +104,7 @@ class Flower(FlowerScreen):
         self.my_manager = my_manager
         self.name = name
         self.port = port
+        self.flower_name = name
 
         super(Flower, self).__init__()
 
