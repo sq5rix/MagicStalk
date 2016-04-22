@@ -48,7 +48,8 @@
         anchor_x: 'left'
         anchor_y: 'top'
         StackLayout:
-            size_hint_x: 0.4
+            id: stack
+            size_hint_x: 0.5
             size_hint_y: 0.1
             orientation: 'lr-tb'
             Label:
@@ -58,15 +59,31 @@
                 font_size: self.height * 0.6
                 multiline: False
                 text: ''
-                text_hint: ''
                 focus: True
+            Button:
+                text: 'Choose Image'
+                on_release:
+                    root.manager.current='Choose Image'
+            GraphWindow:
+                id: graph_window
+                graph_name: root.flower_name
+                new_avg_mst: root.avg_mst.text
+                size_hint_y: 5.5
+                canvas:
+                    Color:
+                        rgba: 0.08, 0.4, 0.08, .3
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                    Color:
+                        rgba: 1, 1, 1, 1
 
     AnchorLayout:
         anchor_x: 'right'
         anchor_y: 'bottom'
         Button:
             text: 'OK'
-            size_hint: 0.18, 0.12
+            size_hint: 0.18, 0.10
             on_release:
                 root.manager.flower_name=root.manager.flower_screen.ids.text_input.text
                 root.manager.current='Main Screen'
@@ -76,7 +93,7 @@
         anchor_y: 'bottom'
         Button:
             text: 'Cancel'
-            size_hint: 0.18, 0.12
+            size_hint: 0.18, 0.10
             on_release:
                 root.manager.current='Main Screen'
 
@@ -86,7 +103,7 @@
         Button:
             background_color: (1, 0, 0.1, 1)
             text: 'Delete'
-            size_hint: 0.18, 0.12
+            size_hint: 0.18, 0.10
             on_release:
                 root.delete_flower = True
 
@@ -130,6 +147,20 @@
                 on_text:
                     root.chosen_port = self.text
 
+<Label>:
+    font_size: 40
+<ImageFileScreen@Screen>:
+    id: img_scr
+    FileChooserIconView:
+        orientation: 'vertical'
+        spacing: 5
+        padding: [6, 6, 6, 6]
+        font_size: 40
+        id: fc
+        path: '~'
+        filter: ['*.png']
+
+
 <Manager>:
     id: screen_manager
 
@@ -146,4 +177,8 @@
         name: "Flower Screen"
         manager: screen_manager
 
+    ImageFileScreen:
+        id: img_scr
+        name: "Choose Image"
+        manager: screen_manager
 

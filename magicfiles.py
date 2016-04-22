@@ -30,4 +30,3 @@ class MagicFileWriter:
             self.f.write(i)
         self.f.flush()
 
-

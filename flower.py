@@ -1,6 +1,7 @@
 from magicerror import MagicError
 from json import dumps, loads
 import os
+import csv
 
 from kivy.properties import ObjectProperty, ListProperty, StringProperty, BooleanProperty
 from kivy.uix.screenmanager import Screen
@@ -8,8 +9,10 @@ from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.label import Label
-from interface import populate_ports
+from kivy.graphics import *
+from kivy.uix.widget import Widget
 
+from interface import populate_ports
 from interface import AvrParser
 
 
@@ -18,6 +21,7 @@ class FlowerScreen(Screen):
     """
     port_list = ListProperty()
     chosen_port = StringProperty()
+    flower_name = StringProperty()
     delete_flower = BooleanProperty(False)  # simple flag to delete object
 
     def __init__(self, **kwargs):
@@ -31,17 +35,88 @@ class FlowerScreen(Screen):
         super(FlowerScreen, self).__init__(**kwargs)
 
 
+class GraphWindow(Widget):
+
+    graph_name = StringProperty()
+    new_avg_mst = StringProperty()
+
+    def __init__(self, **kwargs):
+        super(GraphWindow, self).__init__(**kwargs)
+        self.last_hour = '00'
+        self.line_elem = []
+        self.time_elem = []
+        self.line_scaled = []
+
+        self.bind(pos=self.update_lines)
+        self.bind(size=self.update_lines)
+
+    def on_graph_name(self, _, val):
+        self.get_moisture_from_file(val)
+
+    def on_new_avg_mst(self, _, val):
+        self.get_moisture_from_file(self.graph_name)
+
+    def update_lines(self, *args):
+        self.canvas.clear()
+        with self.canvas:
+            Color(0.3, 0.4, 0.1, 0.3)
+            for i in range(9):
+                l1 = self.pos[0]
+                l2 = self.pos[1]+int(self.height*i/8)
+                l3 = self.pos[0]+self.width
+                l4 = self.pos[1]+int(self.height*i/8)
+                Line(points=[l1, l2, l3, l4], width=1)
+            Color(0.2, 0.5, 0.1, 0.7)
+            max_l = 700
+            min_l = 400
+            i = 0
+            self.line_scaled = []
+            while i in range(len(self.line_elem)-2):
+                self.line_scaled.append(self.pos[0]+self.line_elem[i])
+                self.line_scaled.append(self.pos[1]+self.height*(self.line_elem[i+1]-min_l)/(max_l-min_l))
+                i += 2
+            Line(points=self.line_scaled)
+
+    @staticmethod
+    def in_hour(time):
+        return time.partition(':')[0]
+
+    def get_moisture_from_file(self, name):
+        # date, time, temp, moist, corr_moist
+        # self.x, self.y, self.width, self.height
+        mp = []
+        self.line_elem = []
+        self.time_elem = []
+        with open('log/{}.csv'.format(name), 'r') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            for row in csv_reader:
+                mp += ([row[i].strip() for i in range(4)])
+        e = index = day = 0
+        while e < len(mp)-4:
+            x = [mp[e+i] for i in range(4)]
+            hour = self.in_hour(x[1])
+            if (hour > self.last_hour) or (hour == '00'):
+                if hour == '00':
+                    day += 1
+                self.line_elem += [index, int(x[3])]
+                self.time_elem += [day, hour]
+                self.last_hour = hour
+                index += 1
+            e += 4
+
+
 class Flower(FlowerScreen):
     """
     flower class to keep single sensor group and flower data
     """
     def __init__(self, my_manager, name, port):
 
-        super(Flower, self).__init__()
-
         self.my_manager = my_manager
         self.name = name
         self.port = port
+        self.flower_name = name
+
+        super(Flower, self).__init__()
 
         self.small_label = ObjectProperty(None)
         self.anchor = ObjectProperty(None)
@@ -53,6 +128,7 @@ class Flower(FlowerScreen):
         self.ids.usb_port.text = self.chosen_port
         self.bind(chosen_port=self.connect_flower_to_sensor)
         self.bind(delete_flower=self.delete_this_flower)
+
         self.add_button_to_main()
 
         self.communicator = AvrParser(self.name)
