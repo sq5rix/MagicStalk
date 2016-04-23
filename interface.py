@@ -61,6 +61,8 @@ class SerialInterface(Parser):
                 except:
                     self.serial_port_handle.close()
                     self.port_ok = False
+                finally:
+                    return ' '
 
     def write_char(self, c):
         try:
@@ -74,19 +76,22 @@ class SerialInterface(Parser):
             return
         c = ''
         while True:
-            if c.isalpha():
-                self.command = c
-                num = ''
-                c = self.read_char()
-                while c.isdigit():
-                    num += c
+            try:
+                if c.isalpha():
+                    self.command = c
+                    num = ''
                     c = self.read_char()
-                if num.__sizeof__() > 0:
-                    self.val = num
-                    self.result = [self.command, self.val]
-                    print(self.result)
-                else:
-                    pass
+                    while c.isdigit():
+                        num += c
+                        c = self.read_char()
+                    if num.__sizeof__() > 0:
+                        self.val = num
+                        self.result = [self.command, self.val]
+                        print(self.result)
+                    else:
+                        pass
+            except:
+                pass
             else:
                 c = self.read_char()
 
@@ -207,7 +212,7 @@ def list_serial_ports():
             s.close()
             result.append(port)
         except (OSError, serial.SerialException):
-            pass
+            print('list serial ports failed')
     return result
 
 
