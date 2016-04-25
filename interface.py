@@ -79,30 +79,31 @@ class SerialInterface(Parser):
         """ parse event on change will send command and value - abstract, works with interface """
         if not self.port_ok:
             return
-        c = yield from self.read_char()
-        # while True:
-        try:
-            if c.isalpha():
-                self.command = c
-                num = ''
-                c = yield from self.read_char()
-                while c.isdigit():
-                    num += c
+        c = ''
+        while True:
+            try:
+                if c.isalpha():
+                    self.command = c
+                    num = ''
                     c = yield from self.read_char()
-                if num.__sizeof__() > 0:
-                    self.val = num
-                    self.result = [self.command, self.val]
-                    print(self.result)
-                else:
-                    pass
-        except:
-            pass
+                    while c.isdigit():
+                        num += c
+                        c = yield from self.read_char()
+                    if num.__sizeof__() > 0:
+                        self.val = num
+                        self.result = [self.command, self.val]
+                        print(self.result)
+                    else:
+                        pass
+            except:
+                pass
+            else:
+                c = yield from self.read_char()
 
     def start_asyncio(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.loop.call_soon_threadsafe(self.parse)
-        self.loop.run_forever()
+        self.loop.run_until_complete(self.parse())
 
     def start_thread(self, name):
         try:
