@@ -12,6 +12,8 @@ from kivy.event import EventDispatcher
 from magicfiles import MagicFileWriter
 from magicerror import MagicError
 
+import asyncio
+
 
 class Parser(EventDispatcher):
     """ simple abstract parser - format 'X9292992 ', where X - any letter, any number follows """
@@ -43,6 +45,9 @@ class SerialInterface(Parser):
         self.val = ''
         self.command = ''
 
+        self.loop = None
+
+    @asyncio.coroutine
     def read_char(self):
         if not self.port_ok:
             return ' '
@@ -74,37 +79,39 @@ class SerialInterface(Parser):
         """ parse event on change will send command and value - abstract, works with interface """
         if not self.port_ok:
             return
-        c = ''
-        while True:
-            try:
-                if c.isalpha():
-                    self.command = c
-                    num = ''
-                    c = self.read_char()
-                    while c.isdigit():
-                        num += c
-                        c = self.read_char()
-                    if num.__sizeof__() > 0:
-                        self.val = num
-                        self.result = [self.command, self.val]
-                        print(self.result)
-                    else:
-                        pass
-            except:
-                pass
-            else:
-                c = self.read_char()
+        c = yield from self.read_char()
+        # while True:
+        try:
+            if c.isalpha():
+                self.command = c
+                num = ''
+                c = yield from self.read_char()
+                while c.isdigit():
+                    num += c
+                    c = yield from self.read_char()
+                if num.__sizeof__() > 0:
+                    self.val = num
+                    self.result = [self.command, self.val]
+                    print(self.result)
+                else:
+                    pass
+        except:
+            pass
 
     def start_thread(self, name):
-        try:
-            self._t = Thread(target=self.parse, name=name)
-            self._t.daemon = True
-            self._t.start()
-            self._stop = Event()
-            self.magic_file_handle = MagicFileWriter(self.name)
-            print('new thread name = ' + self._t.name)
-        except Exception as e:
-            MagicError('Thread failed')
+        self.loop = asyncio.get_event_loop()
+        self.loop.call_soon(self.parse)
+        self.loop.run_forever()
+        print('fuckup')
+        # try:
+        #     self._t = Thread(target=self.parse, name=name)
+        #     self._t.daemon = True
+        #     self._t.start()
+        #     self._stop = Event()
+        self.magic_file_handle = MagicFileWriter(name)
+        #     print('new thread name = ' + self._t.name)
+        # except Exception as e:
+        #     MagicError('Thread failed')
 
     def change_port(self, name):
         """ change communication port and start its thread
@@ -213,6 +220,8 @@ def list_serial_ports():
             result.append(port)
         except (OSError, serial.SerialException):
             print('list serial ports failed')
+        finally:
+            print(result)
     return result
 
 
