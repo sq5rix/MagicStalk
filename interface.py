@@ -98,20 +98,22 @@ class SerialInterface(Parser):
         except:
             pass
 
-    def start_thread(self, name):
-        self.loop = asyncio.get_event_loop()
-        self.loop.call_soon(self.parse)
+    def start_asyncio(self):
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.loop.call_soon_threadsafe(self.parse)
         self.loop.run_forever()
-        print('fuckup')
-        # try:
-        #     self._t = Thread(target=self.parse, name=name)
-        #     self._t.daemon = True
-        #     self._t.start()
-        #     self._stop = Event()
-        self.magic_file_handle = MagicFileWriter(name)
-        #     print('new thread name = ' + self._t.name)
-        # except Exception as e:
-        #     MagicError('Thread failed')
+
+    def start_thread(self, name):
+        try:
+            self._t = Thread(target=self.start_asyncio, name=name)
+            self._t.daemon = True
+            self._t.start()
+            self._stop = Event()
+            self.magic_file_handle = MagicFileWriter(name)
+            print('new thread name = ' + self._t.name)
+        except Exception as e:
+            MagicError('Thread failed')
 
     def change_port(self, name):
         """ change communication port and start its thread
