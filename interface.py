@@ -4,6 +4,7 @@ import sys
 import glob
 import serial
 import datetime
+import re
 
 from threading import Thread, Event
 from kivy.properties import ListProperty
@@ -46,6 +47,7 @@ class SerialInterface(Parser):
         self.command = ''
 
         self.loop = None
+        self.buf = ''
 
     @asyncio.coroutine
     def read_char(self):
@@ -53,7 +55,7 @@ class SerialInterface(Parser):
             return ' '
         for _ in range(10):
             try:
-                c = str(self.serial_port_handle.read(), encoding='ascii')
+                c = yield from str(self.serial_port_handle.read(), encoding='ascii')
                 self.port_ok = True
                 return c
             except:
@@ -66,8 +68,6 @@ class SerialInterface(Parser):
                 except:
                     self.serial_port_handle.close()
                     self.port_ok = False
-                finally:
-                    return ' '
 
     def write_char(self, c):
         try:
@@ -75,35 +75,24 @@ class SerialInterface(Parser):
         except serial.serialutil.SerialException:
             MagicError('cannot write to port: '+self.port)
 
+    @asyncio.coroutine
     def parse(self):
         """ parse event on change will send command and value - abstract, works with interface """
+        print('it works...')
         if not self.port_ok:
             return
-        c = ''
-        while True:
-            try:
-                if c.isalpha():
-                    self.command = c
-                    num = ''
-                    c = yield from self.read_char()
-                    while c.isdigit():
-                        num += c
-                        c = yield from self.read_char()
-                    if num.__sizeof__() > 0:
-                        self.val = num
-                        self.result = [self.command, self.val]
-                        print(self.result)
-                    else:
-                        pass
-            except:
-                pass
-            else:
-                c = yield from self.read_char()
+        self.buf += yield from self.read_char()
+        lookup = re.search('([MACT][0-9]+)\s', self.buf)
+        print(lookup)
+        if lookup:
+            self.buf = ''
+            self.result = lookup
 
     def start_asyncio(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.loop.run_until_complete(self.parse())
+        self.loop.create_task(self.parse())
+        self.loop.run_forever()
 
     def start_thread(self, name):
         try:
