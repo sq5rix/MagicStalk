@@ -49,25 +49,28 @@ class SerialInterface(Parser):
         self.loop = None
         self.buf = ''
 
-    @asyncio.coroutine
+    # @asyncio.coroutine
     def read_char(self):
-        if not self.port_ok:
-            return ' '
-        for _ in range(10):
-            try:
-                c = yield from str(self.serial_port_handle.read(), encoding='ascii')
-                self.port_ok = True
-                return c
-            except:
-                try:
-                    print('retry port... ', self.port)
-                    self.serial_port_handle.close()
-                    self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
-                    self.serial_port_handle.flush()
-                    self.port_ok = True
-                except:
-                    self.serial_port_handle.close()
-                    self.port_ok = False
+        print('read...')
+        return(yield from self.loop.run_in_executor(None, self.serial_port_handle.read))
+        # return str(c, encoding='ascii')
+        # if not self.port_ok:
+        #     return ' '
+        # for _ in range(10):
+        #     try:
+        #         c = yield from str(self.serial_port_handle.read(), encoding='ascii')
+        #         self.port_ok = True
+        #         return c
+        #     except:
+        #         try:
+        #             print('retry port... ', self.port)
+        #             self.serial_port_handle.close()
+        #             self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
+        #             self.serial_port_handle.flush()
+        #             self.port_ok = True
+        #         except:
+        #             self.serial_port_handle.close()
+        #             self.port_ok = False
 
     def write_char(self, c):
         try:
@@ -78,32 +81,39 @@ class SerialInterface(Parser):
     @asyncio.coroutine
     def parse(self):
         """ parse event on change will send command and value - abstract, works with interface """
-        print('it works...')
-        if not self.port_ok:
-            return
-        self.buf += yield from self.read_char()
-        lookup = re.search('([MACT][0-9]+)\s', self.buf)
-        print(lookup)
-        if lookup:
-            self.buf = ''
-            self.result = lookup
+        while True:
+            print('it works...')
+            if not self.port_ok:
+                return
+            c = yield from self.loop.run_in_executor(None, self.serial_port_handle.read)
+            self.buf += str(c, encoding='ascii')
+            lookup = re.search('([MACT][0-9]+)\s', self.buf)
+            print('>{}<'.format(lookup))
+            if lookup:
+                st = lookup.group(1)
+                print(st)
+                self.buf = ''
+                self.result = [st[0], st[1:]]
+                print(self.result)
 
     def start_asyncio(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.loop.create_task(self.parse())
         self.loop.run_forever()
+        print('fuckup')
 
     def start_thread(self, name):
-        try:
-            self._t = Thread(target=self.start_asyncio, name=name)
-            self._t.daemon = True
-            self._t.start()
-            self._stop = Event()
-            self.magic_file_handle = MagicFileWriter(name)
-            print('new thread name = ' + self._t.name)
-        except Exception as e:
-            MagicError('Thread failed')
+        # try:
+        #     self._t = Thread(target=self.start_asyncio, name=name)
+        #     self._t.daemon = True
+        #     self._t.start()
+        #     self._stop = Event()
+        self.start_asyncio()
+        self.magic_file_handle = MagicFileWriter(name)
+        #     print('new thread name = ' + self._t.name)
+        # except Exception as e:
+        #     MagicError('Thread failed')
 
     def change_port(self, name):
         """ change communication port and start its thread
