@@ -68,7 +68,7 @@ class SerialInterface(Parser):
                 print(self.result)
 
     def start_thread(self, name):
-        Clock.schedule_interval(self.parse, 0.5)
+        Clock.schedule_interval(self.parse, 1.)
         self.magic_file_handle = MagicFileWriter(name)
 
     def change_port(self, name):

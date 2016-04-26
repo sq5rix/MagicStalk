@@ -8,13 +8,16 @@
 <MySpinnerOption@SpinnerOption>:
     background_color: color_button if self.state == 'down' else color_button_pressed
     color: color_font
+    font_size: self.height / 6
 
 <Label>:
     font_size: self.height / 3
+
 <Button>:
     background_color: (0.2, 0.6, 0.3, 1)
     color: color_font
     font_size: self.height / 4
+
 <TextInput>:
     font_size: self.height / 4
 
@@ -137,8 +140,8 @@
                 text: 'USB Port'
             Spinner:
                 id: usb_port
+                sync_height: True
                 background_color: (1, 1, 1, 1)
-                font_size: self.height / 4
                 text: 'None'
                 values: root.port_list
                 background_color: color_button if self.state == 'normal' else color_button_pressed
@@ -155,7 +158,6 @@
         orientation: 'vertical'
         spacing: 5
         padding: [6, 6, 6, 6]
-        font_size: 40
         id: fc
         path: '~'
         filter: ['*.png']

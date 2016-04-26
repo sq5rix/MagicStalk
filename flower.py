@@ -54,7 +54,15 @@ class GraphWindow(Widget):
         self.get_moisture_from_file(val)
 
     def on_new_avg_mst(self, _, val):
-        self.get_moisture_from_file(self.graph_name)
+        self.line_elem.append(self.line_elem[-2]+1)
+        self.line_elem.append(val)
+        self.draw_point(len(self.line_scaled)+1)
+
+    def draw_point(self, i):
+        max_l = 700
+        min_l = 450
+        self.line_scaled.append(self.pos[0]+self.width-self.line_elem[-1]+self.line_elem[i])
+        self.line_scaled.append(self.pos[1]+self.height*(self.line_elem[i+1]-min_l)/(max_l-min_l))
 
     def update_lines(self, *args):
         self.canvas.clear()
@@ -67,15 +75,12 @@ class GraphWindow(Widget):
                 l4 = self.pos[1]+int(self.height*i/8)
                 Line(points=[l1, l2, l3, l4], width=1)
             Color(0.2, 0.5, 0.1, 0.7)
-            max_l = 700
-            min_l = 400
             i = 0
             self.line_scaled = []
             while i in range(len(self.line_elem)-2):
-                self.line_scaled.append(self.pos[0]+self.line_elem[i])
-                self.line_scaled.append(self.pos[1]+self.height*(self.line_elem[i+1]-min_l)/(max_l-min_l))
+                self.draw_point(i)
                 i += 2
-            Line(points=self.line_scaled)
+            line = Line(points=self.line_scaled)
 
     @staticmethod
     def in_hour(time):
