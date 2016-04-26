@@ -82,19 +82,19 @@ class SerialInterface(Parser):
     def parse(self):
         """ parse event on change will send command and value - abstract, works with interface """
         while True:
-            print('it works...')
+            # print('it works...')
             if not self.port_ok:
                 return
             c = yield from self.loop.run_in_executor(None, self.serial_port_handle.read)
-            self.buf += str(c, encoding='ascii')
-            lookup = re.search('([MACT][0-9]+)\s', self.buf)
-            print('>{}<'.format(lookup))
-            if lookup:
-                st = lookup.group(1)
-                print(st)
-                self.buf = ''
-                self.result = [st[0], st[1:]]
-                print(self.result)
+            if len(c) > 0:
+                self.buf += str(c, encoding='ascii')
+                lookup = re.search('([MACT][0-9]+)\s', self.buf)
+                if lookup:
+                    st = lookup.group(1)
+                    # print(st)
+                    self.buf = ''
+                    self.result = [st[0], st[1:]]
+                    print(self.result)
 
     def start_asyncio(self):
         self.loop = asyncio.new_event_loop()
@@ -104,16 +104,15 @@ class SerialInterface(Parser):
         print('fuckup')
 
     def start_thread(self, name):
-        # try:
-        #     self._t = Thread(target=self.start_asyncio, name=name)
-        #     self._t.daemon = True
-        #     self._t.start()
-        #     self._stop = Event()
-        self.start_asyncio()
-        self.magic_file_handle = MagicFileWriter(name)
-        #     print('new thread name = ' + self._t.name)
-        # except Exception as e:
-        #     MagicError('Thread failed')
+        try:
+            self._t = Thread(target=self.start_asyncio, name=name)
+            self._t.daemon = True
+            self._t.start()
+            self._stop = Event()
+            self.magic_file_handle = MagicFileWriter(name)
+            print('new thread name = ' + self._t.name)
+        except Exception as e:
+            MagicError('Thread failed')
 
     def change_port(self, name):
         """ change communication port and start its thread
@@ -135,7 +134,7 @@ class SerialInterface(Parser):
     def open_port(self):
         if self.check_port():
             try:
-                self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
+                self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE, timeout=0)
                 self.serial_port_handle.flush()
                 self.port_ok = True
             except serial.serialutil.SerialException:
