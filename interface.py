@@ -1,19 +1,14 @@
-from abc import abstractmethod
-
 import sys
 import glob
 import serial
 import datetime
 import re
 
-from threading import Thread, Event
 from kivy.properties import ListProperty
 from kivy.event import EventDispatcher
-
+from kivy.clock import Clock
 from magicfiles import MagicFileWriter
 from magicerror import MagicError
-
-import asyncio
 
 
 class Parser(EventDispatcher):
@@ -49,70 +44,32 @@ class SerialInterface(Parser):
         self.loop = None
         self.buf = ''
 
-    # @asyncio.coroutine
-    def read_char(self):
-        print('read...')
-        return(yield from self.loop.run_in_executor(None, self.serial_port_handle.read))
-        # return str(c, encoding='ascii')
-        # if not self.port_ok:
-        #     return ' '
-        # for _ in range(10):
-        #     try:
-        #         c = yield from str(self.serial_port_handle.read(), encoding='ascii')
-        #         self.port_ok = True
-        #         return c
-        #     except:
-        #         try:
-        #             print('retry port... ', self.port)
-        #             self.serial_port_handle.close()
-        #             self.serial_port_handle = serial.Serial(self.port, baudrate=self.BAUD_RATE)
-        #             self.serial_port_handle.flush()
-        #             self.port_ok = True
-        #         except:
-        #             self.serial_port_handle.close()
-        #             self.port_ok = False
-
     def write_char(self, c):
         try:
             str(self.serial_port_handle.write(c), encoding='UTF-8')
         except serial.serialutil.SerialException:
             MagicError('cannot write to port: '+self.port)
 
-    @asyncio.coroutine
-    def parse(self):
+    def parse(self, dt):
         """ parse event on change will send command and value - abstract, works with interface """
-        while True:
-            # print('it works...')
-            if not self.port_ok:
-                return
-            c = yield from self.loop.run_in_executor(None, self.serial_port_handle.read)
-            if len(c) > 0:
-                self.buf += str(c, encoding='ascii')
-                lookup = re.search('([MACT][0-9]+)\s', self.buf)
-                if lookup:
-                    st = lookup.group(1)
-                    # print(st)
-                    self.buf = ''
-                    self.result = [st[0], st[1:]]
-                    print(self.result)
-
-    def start_asyncio(self):
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
-        self.loop.create_task(self.parse())
-        self.loop.run_forever()
-        print('fuckup')
+        # while True:
+        # print('it works...')
+        if not self.port_ok:
+            return
+        c = self.serial_port_handle.read()
+        if len(c) > 0:
+            self.buf += str(c, encoding='ascii')
+            lookup = re.search('([MACT][0-9]+)\s', self.buf)
+            if lookup:
+                st = lookup.group(1)
+                # print(st)
+                self.buf = ''
+                self.result = [st[0], st[1:]]
+                print(self.result)
 
     def start_thread(self, name):
-        try:
-            self._t = Thread(target=self.start_asyncio, name=name)
-            self._t.daemon = True
-            self._t.start()
-            self._stop = Event()
-            self.magic_file_handle = MagicFileWriter(name)
-            print('new thread name = ' + self._t.name)
-        except Exception as e:
-            MagicError('Thread failed')
+        Clock.schedule_interval(self.parse, 0.5)
+        self.magic_file_handle = MagicFileWriter(name)
 
     def change_port(self, name):
         """ change communication port and start its thread
@@ -224,5 +181,4 @@ def list_serial_ports():
         finally:
             print(result)
     return result
-
 
