@@ -56,7 +56,7 @@ class GraphWindow(Widget):
     def on_new_avg_mst(self, _, val):
         self.line_elem.append(self.line_elem[-2]+1)
         self.line_elem.append(val)
-        self.draw_point(len(self.line_scaled)+1)
+        #self.draw_point(len(self.line_scaled)+1)
 
     def draw_point(self, i):
         max_l = 700
