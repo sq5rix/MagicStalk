@@ -45,6 +45,7 @@
     avg_mst:  avg_mst
     cur_temp: cur_temp
     adj_mst:  adj_mst
+    ref_mst:  ref_mst
     usb_port: usb_port
 
     AnchorLayout:
@@ -115,7 +116,7 @@
         anchor_y: 'top'
         GridLayout:
             cols: 2
-            size_hint: 0.5, 0.5
+            size_hint: 0.5, 0.6
             Label:
                 text: 'Current Moisture'
             Label:
@@ -135,6 +136,11 @@
                 text: 'Adjusted Moisture'
             Label:
                 id: adj_mst
+                text: ''
+            Label:
+                text: 'Reference Moisture'
+            Label:
+                id: ref_mst
                 text: ''
             Label:
                 text: 'USB Port'

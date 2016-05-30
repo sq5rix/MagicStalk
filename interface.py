@@ -58,8 +58,13 @@ class SerialInterface(Parser):
             return
         c = self.serial_port_handle.read()
         if len(c) > 0:
-            self.buf += str(c, encoding='ascii')
-            lookup = re.search('([MACT][0-9]+)\s', self.buf)
+            print('>{}<'.format(c))
+            try:
+                self.buf += str(c, encoding='ascii')
+            except UnicodeDecodeError as e:
+                print(e)
+            lookup = re.search('([MACTR][0-9]+)\s', self.buf)
+
             if lookup:
                 st = lookup.group(1)
                 # print(st)
@@ -122,7 +127,7 @@ class AvrParser(SerialInterface):
 
     def __init__(self, name):
         super(AvrParser, self).__init__(name)
-        self.passed_value = ['', '', '', '']
+        self.passed_value = ['', '', '', '', '']
 
     def listener(self, _, val):
         """ push data from serial port to flower display
@@ -136,6 +141,8 @@ class AvrParser(SerialInterface):
             self.passed_value[2] = str(val[1])
         elif val[0] == 'C':
             self.passed_value[3] = str(val[1])
+        elif val[0] == 'R':
+            self.passed_value[4] = str(val[1])
             self.write_data_to_parser_file(
                 datetime.datetime.strftime(
                     datetime.datetime.now(),

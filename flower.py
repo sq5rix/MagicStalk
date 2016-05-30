@@ -56,7 +56,7 @@ class GraphWindow(Widget):
     def on_new_avg_mst(self, _, val):
         self.line_elem.append(self.line_elem[-2]+1)
         self.line_elem.append(val)
-        #self.draw_point(len(self.line_scaled)+1)
+        # self.draw_point(len(self.line_scaled)+1)
 
     def draw_point(self, i):
         max_l = 700
@@ -92,22 +92,25 @@ class GraphWindow(Widget):
         mp = []
         self.line_elem = []
         self.time_elem = []
-        with open('log/{}.csv'.format(name), 'r') as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            for row in csv_reader:
-                mp += ([row[i].strip() for i in range(4)])
-        e = index = day = 0
-        while e < len(mp)-4:
-            x = [mp[e+i] for i in range(4)]
-            hour = self.in_hour(x[1])
-            if (hour > self.last_hour) or (hour == '00'):
-                if hour == '00':
-                    day += 1
-                self.line_elem += [index, int(x[3])]
-                self.time_elem += [day, hour]
-                self.last_hour = hour
-                index += 1
-            e += 4
+        try:
+            with open('log/{}.csv'.format(name), 'r') as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                for row in csv_reader:
+                    mp += ([row[i].strip() for i in range(4)])
+            e = index = day = 0
+            while e < len(mp)-4:
+                x = [mp[e+i] for i in range(4)]
+                hour = self.in_hour(x[1])
+                if (hour > self.last_hour) or (hour == '00'):
+                    if hour == '00':
+                        day += 1
+                    self.line_elem += [index, int(x[3])]
+                    self.time_elem += [day, hour]
+                    self.last_hour = hour
+                    index += 1
+                e += 4
+        except:
+            pass
 
 
 class Flower(FlowerScreen):
@@ -155,6 +158,7 @@ class Flower(FlowerScreen):
         self.ids.cur_temp.text = val[1]
         self.ids.avg_mst.text = val[2]
         self.ids.adj_mst.text = val[3]
+        self.ids.ref_mst.text = val[4]
 
     def add_button_to_main(self):
         """
