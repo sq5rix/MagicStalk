@@ -59,15 +59,15 @@ class GraphWindow(Widget):
         # self.draw_point(len(self.line_scaled)+1)
 
     def draw_point(self, i):
-        max_l = 700
-        min_l = 450
+        max_l = 500
+        min_l = 100
         self.line_scaled.append(self.pos[0]+self.width-self.line_elem[-1]+self.line_elem[i])
         self.line_scaled.append(self.pos[1]+self.height*(self.line_elem[i+1]-min_l)/(max_l-min_l))
 
     def update_lines(self, *args):
         self.canvas.clear()
         with self.canvas:
-            Color(0.3, 0.4, 0.1, 0.3)
+            Color(0.3, 0.4, 0.1, 0.8)
             for i in range(9):
                 l1 = self.pos[0]
                 l2 = self.pos[1]+int(self.height*i/8)
